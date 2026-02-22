@@ -16,8 +16,8 @@
 
     function onCheckedChange(args) {
         // args.value is the new boolean state
-        // state = args.value;
-        // dispatch('change', { value: state });
+        state = args.value;
+        dispatch('toggle', { value: state });
         console.log(args.value)
         switchModel.setState(args.value);
     }
