@@ -1,10 +1,10 @@
 <script>
-    import { Bluetooth } from '@nativescript-community/ble';
+    import { bluetooth, switches } from "../models/states.svelte.js";
     import { goBack } from "@nativescript-community/svelte-native";
+    import { get } from "svelte/store";
     import Switch from '~/models/Switch';
     export let peripheral; // Passed from the previous page
     
-    const bluetooth = new Bluetooth();
     let services = [];
     let isLoading = true;
 
@@ -76,7 +76,7 @@
             const data = new Uint8Array([byteValue]);
             const value = Array.from(data);
             // 2. Perform the write operation
-            await bluetooth.write({
+            await get(bluetooth).write({
                 peripheralUUID: peripheralUUID,
                 serviceUUID: serviceUUID,
                 characteristicUUID: characteristicUUID,
@@ -91,15 +91,16 @@
             return false;
         }
     }
+
     async function discoverAll() {
         isLoading = true;
         try {
             // 1. Connection Safety Check
-            let connected = await bluetooth.isConnected({ UUID: peripheral.UUID });
+            let connected = await get(bluetooth).isConnected({ UUID: peripheral.UUID });
 
             if (!connected) {
                 console.log("Device not ready. Attempting a quick reconnect...");
-                await bluetooth.connect({ 
+                await get(bluetooth).connect({ 
                     UUID: peripheral.UUID,
                     autoConnect: false 
                 });
@@ -109,7 +110,7 @@
             console.log("Starting full discovery for", peripheral.UUID);
             
             // 2. Perform the full tree discovery
-            const result = await bluetooth.discoverAll({
+            const result = await get(bluetooth).discoverAll({
                 peripheralUUID: peripheral.UUID
             });
 
@@ -121,7 +122,7 @@
                     // Only try to read if the hardware says it's allowed
                     if (char.properties.read) {
                         try {
-                            const readResult = await bluetooth.read({
+                            const readResult = await get(bluetooth).read({
                                 peripheralUUID: peripheral.UUID,
                                 serviceUUID: service.UUID,
                                 characteristicUUID: char.UUID
@@ -217,7 +218,7 @@
             
             // console.log("3. Buffer Length is:", buffer.byteLength);
             // console.log("Enabling Notifications to 'prime' the MCU...");
-            // await bluetooth.startNotifying({
+            // await get(bluetooth).startNotifying({
             //     peripheralUUID: peripheral.UUID,
             //     serviceUUID: testService,
             //     characteristicUUID: testChar,
@@ -231,7 +232,7 @@
             console.log("4. Starting 1s timeout for write...");
             try {
                 console.log("5. Inside timeout, calling write...");
-                await bluetooth.write({
+                await get(bluetooth).write({
                     peripheralUUID: peripheral.UUID,
                     serviceUUID: testService,
                     characteristicUUID: testChar,
@@ -270,7 +271,8 @@
                         text="Toggle CAM"
                         class="btn -primary"
                         on:tap={async () => {
-                            await togglingSwitch.toggle(bluetooth, peripheral.UUID);
+                            const actualSwitch = get(switches).filter(obj => obj.label == "CAM")[0];
+                            await actualSwitch.toggle(bluetooth, peripheral.UUID);
                         }}
                     />
                     <label text={peripheral.name || "Device Detail"} class="h2 m-b-10" />

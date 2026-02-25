@@ -1,77 +1,26 @@
 <script>
-    import { Bluetooth } from '@nativescript-community/ble';
-    
+    import { bluetooth, peripheralUUID, switches } from "../models/states.svelte.js";
     import CustomToggle from './CustomToggle.svelte';
-    import Switch from "../models/Switch";
+    import { get } from "svelte/store";
 
+
+    import { prompt } from '@nativescript/core/ui/dialogs';
+
+    
+
+
+    let isArmed = false;
     // 1. Initialize Bluetooth
-    const bluetooth = new Bluetooth();
 
     // Assuming you have the connected peripheral UUID available globally or via props
-    export let peripheralUuid; 
 
-    const switchInitData = [
-        {
-            label: "Disconnected",
-            state: false,
-            enabled: false,
-            switchNum: 1,
-            serviceUuid: "72737810-8272-9812-9898-98bcdef98198",
-            charUuid: "1ab83456-7653-7384-2737-484838483848"
-        },
-        {
-            label: "Blue Raven",
-            state: false,
-            enabled: true,
-            switchNum: 2,
-            serviceUuid: "72737810-8272-9812-9898-98bcdef98198",
-            charUuid: "637777ab-c738-7de7-2898-273738838838"
-        },
-        {
-            label: "CAM",
-            state: false,
-            enabled: true,
-            switchNum: 3,
-            serviceUuid: "72737810-8272-9812-9898-98bcdef98198",
-            charUuid: "72671834-8282-0308-2383-838bcde29092"
-        },
-        {
-            label: "TeleMega Pyro",
-            state: false,
-            enabled: true,
-            switchNum: 4,
-            serviceUuid: "73737373-7371-9192-1095-09128927266b",
-            charUuid: "987187ab-d937-fe72-8374-020927167827"
-        },
-        {
-            label: "TeleMega Power",
-            state: false,
-            enabled: true,
-            switchNum: 5,
-            serviceUuid: "73737373-7371-9192-1095-09128927266b",
-            charUuid: "67374498-9248-9249-8249-834893483bcd"
-        },
-        {
-            label: "MIDAS",
-            state: true,
-            enabled: true,
-            switchNum: 6,
-            serviceUuid: "73737373-7371-9192-1095-09128927266b",
-            charUuid: "97198188-9289-2bcd-98f9-8e9898e71231"
-        },
-    ];
 
     // Ensure our local 'switches' objects keep their UUID metadata
-    let switches = switchInitData.map(data => {
-        let s = new Switch(data.label, data.state, data.enabled, data.switchNum, data.serviceUuid, data.charUuid);
-        // Attach UUIDs to the model instance for easy access in handleToggle
-        return s;
-    });
 
-    $: reactiveSwitches = switches;
 
     // 2. The Logic to send 0x01 or 0x00
     async function handleToggle(customSwitch) {
+        customSwitch.toggle();
         const valueToSend = customSwitch.state ? 0x01 : 0x00;
         
         try {
@@ -113,11 +62,38 @@
 <page>
     <actionBar title="Switches" />
     <stackLayout>
-        {#each reactiveSwitches as customSwitch (customSwitch.switchNum)}
-            <CustomToggle 
+        {#each ($switches).sort((a, b) => a.switchNum - b.switchNum) as customSwitch (customSwitch.switchNum)}
+            <!-- <CustomToggle 
                 switchModel={customSwitch}
                 on:toggle={() => handleToggle(customSwitch)}
-            />
+            /> -->
+            <stackLayout orientation="horizontal" width="100%">
+                <button isEnabled={isArmed} text={`${customSwitch.label} On`} width="30%" on:tap={async () => {
+                    await customSwitch.bleSendVal(1);
+                }} />
+                <button isEnabled={isArmed} text={`${customSwitch.label} Off`} width="30%" on:tap={async () => {
+                    await customSwitch.bleSendVal(0);
+                }} />
+                <label text={String.fromCharCode(customSwitch.state)} />
+            </stackLayout>
         {/each}
+        <button text={isArmed ? "Disarm" : "Arm"} on:tap={() => {
+            if (isArmed) {
+                isArmed = false;
+                return;
+            }
+            prompt({
+                title: "Confirm Arming",
+                message: "Enter the phrase \"Bagel123\" to arm the BAGEL",
+                inputType: "text",
+                okButtonText: "Arm",
+                cancelButtonText: "Cancel",
+                cancelable: true
+            }).then((result) => {
+                if (result.result && result.text == "Bagel123") {
+                    isArmed = true;
+                }
+            });
+        }} />
     </stackLayout>
 </page>

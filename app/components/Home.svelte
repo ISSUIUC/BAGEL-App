@@ -3,6 +3,8 @@
     import { navigate } from "@nativescript-community/svelte-native";
     import BluetoothPage from "./BluetoothPage.svelte"; // Ensure the path is correct
     import Switches from "./Switches.svelte";
+    import { get } from "svelte/store";
+    import { peripheralUUID, bluetooth } from "../models/states.svelte.js";  //😭
     function goToBluetooth() {
         navigate({
             page: BluetoothPage,
@@ -27,6 +29,16 @@
         });
 
     }
+     
+
+    async function disconnectStuff() {
+        console.log(get(peripheralUUID));
+        await get(bluetooth).disconnect({ UUID: get(peripheralUUID) }).then(() => {
+            console.log("howdy doody");
+        });
+        console.warn("howdy");
+    }
+
 </script>
 
 <page>
@@ -44,6 +56,12 @@
             text="Go To Switches"
             class="btn -primary"
             on:tap={goToSwitches}
+        />
+
+        <button 
+            text="Disconnect"
+            class = "btn -primary"
+            on:tap={disconnectStuff}
         />
 
     </stackLayout>

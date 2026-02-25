@@ -1,9 +1,10 @@
 <script>
-    import { Bluetooth } from '@nativescript-community/ble';
     import { Application } from "@nativescript/core";
-
+    import { switches, peripheralUUID, bluetooth } from "../models/states.svelte.js";
     import StatusPage from "./StatusPage.svelte";
     import { navigate } from "@nativescript-community/svelte-native";
+    import { get } from "svelte/store"
+
     async function requestAndroidPermissions() {
         if (!Application.android) return true; // Not Android, skip
 
@@ -27,7 +28,6 @@
         });
     }
 
-    const bluetooth = new Bluetooth();
 
     async function requestBluetoothPermissions() {
         try {
@@ -35,15 +35,15 @@
             console.log("Checking for available permission methods...");
 
             // Strategy A: The most common Community API name
-            if (typeof bluetooth.requestLocationPermission === "function") {
+            if (typeof (get(bluetooth)).requestLocationPermission === "function") {
                 console.log("Using requestLocationPermission...");
-                return await bluetooth.requestLocationPermission();
+                return await (get(bluetooth)).requestLocationPermission();
             } 
 
             // Strategy B: The newer/specific API name
-            if (typeof bluetooth.requestBluetoothPermissions === "function") {
+            if (typeof (get(bluetooth)).requestBluetoothPermissions === "function") {
                 console.log("Using requestBluetoothPermissions...");
-                return await bluetooth.requestBluetoothPermissions();
+                return await (get(bluetooth)).requestBluetoothPermissions();
             }
 
             // Strategy C: Manually trigger the Android permission bridge
@@ -55,7 +55,9 @@
             return false;
         }
     }
+
     import { ObservableArray } from '@nativescript/core';
+    import Switches from "./Switches.svelte";
     // import Template from "svelte-native/components/Template.svelte";
     // import { Template } from "@nativescript-community/svelte-native";
     let isScanning = false;
@@ -63,13 +65,19 @@
 
     async function checkPermissions() {
         // Essential for Android 12+
-        const hasPermission = await bluetooth.requestPermission({
+        const hasPermission = await (get(bluetooth)).requestPermission({
             bluetoothScan: {},
             bluetoothConnect: {},
             // Include location if you need it for older devices or beacons
             location: {} 
         });
         return hasPermission;
+    }
+
+    async function setupNotifications() {
+        for (let switch_ of $switches) {
+            await switch_.setupNotifications(bluetooth);
+        }
     }
 
     async function toggleScan() {
@@ -80,9 +88,9 @@
         // 2. Proceed with scan
         isScanning = true;
         devices = []; // Clear list
-        await bluetooth.enable();
+        await (get(bluetooth)).enable();
         console.log("things")
-        bluetooth.startScanning({
+        await (get(bluetooth)).startScanning({
             seconds: 4, // Give it more time
             skipPermissionCheck: false, // Force a re-check
             onDiscovered: (device) => {
@@ -103,7 +111,7 @@
         devices = [...devices]; // Trigger Svelte refresh
 
         try {
-            await bluetooth.connect({
+            await (get(bluetooth)).connect({
                 UUID: device.UUID,
                 onConnected: async (peripheral) => {
                     console.log("Link established. Settling...");
@@ -113,28 +121,31 @@
 
                     try {
                         // Test the connection by discovering services BEFORE navigating
-                        await bluetooth.discoverServices({ peripheralUUID: peripheral.UUID });
+                        
+                        await (get(bluetooth)).discoverServices({ peripheralUUID: peripheral.UUID });
                         
                         device.connected = true;
                         devices = [...devices];
+                        peripheralUUID.set(peripheral.UUID);
+                        await setupNotifications().then(() => {
+                            console.log("things")
+                        });
 
                         navigate({
-                            page: StatusPage,
-                            props: { peripheral: {
-                                UUID: device.UUID,
-                                name: device.name || "Unknown Bagel"
-                            } }
+                            page: Switches
                         });
                     } catch (err) {
                         console.error("Connection was a ghost: ", err);
                         // Clean up if it failed
-                        bluetooth.disconnect({ UUID: peripheral.UUID });
+                        peripheralUUID.set(false);
+                        await (get(bluetooth)).disconnect({ UUID: peripheral.UUID });
+
                     }
                 },
                 onDisconnected: (peripheral) => {
                     console.log("Disconnected from", peripheral.UUID);
-                    
-                    // 3. Reset state on disconnect
+                    peripheralUUID.set(false);
+                    // 3. Reset state n disconnect
                     device.connected = false;
                     device.connecting = false;
                     devices = [...devices]; // Refresh UI
@@ -149,7 +160,7 @@
 
     async function disconnectDevice(device) {
         try {
-            await bluetooth.disconnect({
+            await (get(bluetooth)).disconnect({
                 UUID: device.UUID
             });
             // The 'onDisconnected' callback above will handle the UI reset
@@ -161,7 +172,7 @@
     async function discoverDeviceServices(uuid) {
         console.log("Starting Service Discovery...");
         try {
-            const services = await bluetooth.discoverServices({
+            const services = await (get(bluetooth)).discoverServices({
                 peripheralUUID: uuid
             });
             console.log("Discovery complete! Found services:", services);
