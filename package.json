@@ -6,6 +6,7 @@
   "dependencies": {
     "@nativescript-community/ble": "^3.1.22",
     "@nativescript-community/svelte-native": "~1.0.30",
+    "@nativescript-use/nativescript-localstorage": "^0.0.1",
     "@nativescript/core": "^9.0.0",
     "svelte": "^3.0.0",
     "svelte-native": "^0.9.0"

@@ -1,6 +1,7 @@
 <script>
     import { bluetooth, peripheralUUID, switches } from "../models/states.svelte.js";
     import CustomToggle from './CustomToggle.svelte';
+    import StatusMessage from "./StatusMessage.svelte";
     import { get } from "svelte/store";
 
 
@@ -74,7 +75,7 @@
                 <button isEnabled={isArmed} text={`${customSwitch.label} Off`} width="30%" on:tap={async () => {
                     await customSwitch.bleSendVal(0);
                 }} />
-                <label text={String.fromCharCode(customSwitch.state)} />
+                <StatusMessage statusChar={String.fromCharCode(customSwitch.state)} />
             </stackLayout>
         {/each}
         <button text={isArmed ? "Disarm" : "Arm"} on:tap={() => {

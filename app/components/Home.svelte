@@ -3,6 +3,7 @@
     import { navigate } from "@nativescript-community/svelte-native";
     import BluetoothPage from "./BluetoothPage.svelte"; // Ensure the path is correct
     import Switches from "./Switches.svelte";
+    import RenameSwitches from "./RenameSwitches.svelte";
     import { get } from "svelte/store";
     import { peripheralUUID, bluetooth } from "../models/states.svelte.js";  //😭
     function goToBluetooth() {
@@ -30,6 +31,18 @@
 
     }
      
+    function goToSwitchLabels() {
+        navigate({
+            page: RenameSwitches,
+            // Optional: Transition animations
+            transition: {
+                name: "slide",
+                duration: 200,
+                curve: "easeIn"
+            }
+        });
+
+    }
 
     async function disconnectStuff() {
         console.log(get(peripheralUUID));
@@ -63,6 +76,11 @@
             class = "btn -primary"
             on:tap={disconnectStuff}
         />
+
+        <button
+            text="Change Switch Labels"
+            class="btn -primary"
+            on:tap={goToSwitchLabels}/>
 
     </stackLayout>
 </page>

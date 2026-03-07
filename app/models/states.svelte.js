@@ -1,36 +1,45 @@
 import Switch from "./Switch";
 import { writable } from "svelte/store";
+// import localStore from "@nativescript-use/nativescript-localstorage";
+import { localStore } from "./localStore";
 import { Bluetooth } from '@nativescript-community/ble';
 
 export const bluetooth = writable(new Bluetooth());
 
+// export const switch1Label = localStore("switch1", "Switch 1");
+// export const switch2Label = localStore("switch2", "Switch 2");
+// export const switch3Label = localStore("switch3", "Switch 3");
+// export const switch4Label = localStore("switch4", "Switch 4");
+// export const switch5Label = localStore("switch5", "Switch 5");
+// export const switch6Label = localStore("switch6", "Switch 6");
+
+export const switchLabels = [];
+for (let i=1; i<7; i++) {
+    switchLabels.push(localStore(`switch${i}`, `Switch ${i}`))
+}
 export const switchInitData = [
     {
-        label: "Disconnected",
-        state: false,
+        state: 68,
         enabled: false,
         switchNum: 1,
         serviceUuid: "72737810-8272-9812-9898-98bcdef98198",
         charUuid: "1ab83456-7653-7384-2737-484838483848"
     },
     {
-        label: "Blue Raven",
-        state: false,
+        state: 78,
         enabled: true,
         switchNum: 2,
         serviceUuid: "72737810-8272-9812-9898-98bcdef98198",
         charUuid: "637777ab-c738-7de7-2898-273738838838"
     },
     {
-        label: "CAM",
-        state: 83,
+        state: 79,
         enabled: true,
         switchNum: 3,
         serviceUuid: "72737810-8272-9812-9898-98bcdef98198",
         charUuid: "72671834-8282-0308-2383-838bcde29092"
     },
     {
-        label: "TeleMega Pyro",
         state: false,
         enabled: true,
         switchNum: 4,
@@ -38,7 +47,6 @@ export const switchInitData = [
         charUuid: "987187ab-d937-fe72-8374-020927167827"
     },
     {
-        label: "TeleMega Power",
         state: false,
         enabled: true,
         switchNum: 5,
@@ -46,7 +54,6 @@ export const switchInitData = [
         charUuid: "67374498-9248-9249-8249-834893483bcd"
     },
     {
-        label: "MIDAS",
         state: true,
         enabled: true,
         switchNum: 6,
@@ -54,6 +61,7 @@ export const switchInitData = [
         charUuid: "97198188-9289-2bcd-98f9-8e9898e71231"
     },
 ];
+
 
 let switchesData = switchInitData.map(data => {
     let s = new Switch(data.label, data.state, data.enabled, data.switchNum, data.serviceUuid, data.charUuid);

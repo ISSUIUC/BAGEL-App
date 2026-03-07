@@ -1,4 +1,4 @@
-import { peripheralUUID, bluetooth, switches } from "./states.svelte";
+import { peripheralUUID, bluetooth, switches, switchLabels } from "./states.svelte";
 import { get } from "svelte/store";
 
 async function writeByteToCharacteristic(peripheralUUID, serviceUUID, characteristicUUID, byteValue) {
@@ -27,13 +27,16 @@ async function writeByteToCharacteristic(peripheralUUID, serviceUUID, characteri
 
 export default class Switch {
     constructor(label, state, enabled, switchNum, serviceUUID, charUUID) {
-        this.label = label;
         this.state = state;
         this.enabled = enabled;
         this.switchNum = switchNum;
         this.serviceUUID = serviceUUID;
         this.charUUID = charUUID;
         this.id = Math.random();
+    }
+
+    get label() {
+        return get(switchLabels[this.switchNum - 1]);
     }
 
     async toggle() {
