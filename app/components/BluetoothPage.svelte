@@ -94,7 +94,7 @@
             seconds: 4, // Give it more time
             skipPermissionCheck: false, // Force a re-check
             onDiscovered: (device) => {
-                console.log("FOUND RAW:", JSON.stringify(device));
+                // console.log("FOUND RAW:", JSON.stringify(device));
                 devices = [...devices, device];
             },
             avoidDuplicates: true
@@ -170,15 +170,15 @@
     }
 
     async function discoverDeviceServices(uuid) {
-        console.log("Starting Service Discovery...");
+        // console.log("Starting Service Discovery...");
         try {
             const services = await (get(bluetooth)).discoverServices({
                 peripheralUUID: uuid
             });
-            console.log("Discovery complete! Found services:", services);
+            // console.log("Discovery complete! Found services:", services);
             // If you reach this point, the other device DEFINITELY knows you are there.
         } catch (err) {
-            console.error("Discovery failed. The device might have dropped the link:", err);
+            // console.error("Discovery failed. The device might have dropped the link:", err);
         }
     }
     // This will automatically update whenever 'devices' changes
@@ -192,6 +192,8 @@
 
         // 2. If both have names (or both don't), sort them alphabetically
         return nameA.localeCompare(nameB);
+    }).filter(val => {
+        return val.UUID == "00:80:E1:22:25:CF";
     });
 </script>
 
