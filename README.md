@@ -6,6 +6,11 @@ However, instead of using HTML DOM elements, we use NativeScript elements.
 Setup:
 1. Clone the repo locally.
 2. Run `npm i` to install everything necessary.
+3. Run `npm install -g nativescript`
+4. If you're on Mac, do these things:
+5. Run `gem install cocoapods`
+6. Run `brew install rbenv ruby-build`
+7. Run `rbenv install [version](current latest is 3.4.1)`
 
 
 Building the app:
