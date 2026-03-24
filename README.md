@@ -11,7 +11,7 @@ Setup:
 Building the app:
 1. After running setup, you can either run `ns run android` (to build for android) or `ns run ios` (to build for iOS).
 
-> [!INFO]
+> [!NOTE]
 > In order to build for iOS, you need to be using a Mac of some sort.
 
 If you have any questions, ask Melody.
