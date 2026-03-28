@@ -31,7 +31,7 @@
 
     async function requestBluetoothPermissions() {
         try {
-            await requestAndroidPermissions();
+            // await requestAndroidPermissions();
             console.log("Checking for available permission methods...");
 
             // Strategy A: The most common Community API name
@@ -82,14 +82,21 @@
 
     async function toggleScan() {
         // 1. Ask for permission first
+        console.log("scan toggled");
         const allowed = await requestBluetoothPermissions();
         if (!allowed) return;
 
         // 2. Proceed with scan
         isScanning = true;
         devices = []; // Clear list
-        await (get(bluetooth)).enable();
-        console.log("things")
+        console.log("enabling BT")
+        // const enabled = await bluetooth.isBluetoothEnabled();
+        // if (!enabled) {
+        //     // On iOS, you just have to tell the user to go to Settings
+        //     alert("Please turn on Bluetooth in your System Settings.");
+        // }
+        // await (get(bluetooth)).enable();
+        console.log("things");
         await (get(bluetooth)).startScanning({
             seconds: 4, // Give it more time
             skipPermissionCheck: false, // Force a re-check
@@ -100,6 +107,7 @@
             avoidDuplicates: true
         }).then(() => {
             isScanning = false;
+            console.log("done scanning")
         }).catch((err) => {
             console.log("SCAN ERROR:", err);
         });
@@ -107,6 +115,7 @@
 
     async function connectToDevice(device) {
         // 1. Set local loading state
+        console.log("we're trying to do things")
         device.connecting = true;
         devices = [...devices]; // Trigger Svelte refresh
 
@@ -193,7 +202,8 @@
         // 2. If both have names (or both don't), sort them alphabetically
         return nameA.localeCompare(nameB);
     }).filter(val => {
-        return val.UUID == "00:80:E1:22:25:CF";
+        // return val.UUID == "00:80:E1:22:25:CF";
+        return true;
     });
 </script>
 
