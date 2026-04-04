@@ -19,4 +19,6 @@ Building the app:
 > [!NOTE]
 > In order to build for iOS, you need to be using a Mac of some sort.
 
-If you have any questions, ask Melody.
+If you have any questions, ask Melody & Alyssa (for Mac issues).
+
+Alternatively, ask our good friend Chat(GPT).

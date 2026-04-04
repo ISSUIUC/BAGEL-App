@@ -1,6 +1,6 @@
 <script>
     import { Application } from "@nativescript/core";
-    import { switches, peripheralUUID, bluetooth } from "../models/states.svelte.js";
+    import { switches, peripheralUUID, bluetooth, startVoltageNotifications } from "../models/states.svelte.js";
     import StatusPage from "./StatusPage.svelte";
     import { navigate } from "@nativescript-community/svelte-native";
     import { get } from "svelte/store"
@@ -92,7 +92,8 @@
         console.log("things")
         await (get(bluetooth)).startScanning({
             seconds: 4, // Give it more time
-            skipPermissionCheck: false, // Force a re-check
+            filters:{},
+            skipPermissionCheck: false, // F    orce a re-check
             onDiscovered: (device) => {
                 // console.log("FOUND RAW:", JSON.stringify(device));
                 devices = [...devices, device];
@@ -107,6 +108,7 @@
 
     async function connectToDevice(device) {
         // 1. Set local loading state
+        console.log("connect???")
         device.connecting = true;
         devices = [...devices]; // Trigger Svelte refresh
 
@@ -127,9 +129,19 @@
                         device.connected = true;
                         devices = [...devices];
                         peripheralUUID.set(peripheral.UUID);
+                        await startVoltageNotifications().then(() => {
+                            console.log("Voltage notifications set up.")
+                        })
                         await setupNotifications().then(() => {
                             console.log("things")
                         });
+
+                        // navigate({
+                        //     page: StatusPage,
+                        //     props: {
+                        //         peripheral: peripheral
+                        //     }
+                        // })
 
                         navigate({
                             page: Switches
@@ -193,7 +205,11 @@
         // 2. If both have names (or both don't), sort them alphabetically
         return nameA.localeCompare(nameB);
     }).filter(val => {
-        return val.UUID == "00:80:E1:22:25:CF";
+        if (/^BAGEL/.test(val.name)) {
+            // console.log(val.name.charCodeAt(0))
+            return true;
+        }
+        return false;
     });
 </script>
 

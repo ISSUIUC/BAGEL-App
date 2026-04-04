@@ -3,6 +3,7 @@ import { writable } from "svelte/store";
 // import localStore from "@nativescript-use/nativescript-localstorage";
 import { localStore } from "./localStore";
 import { Bluetooth } from '@nativescript-community/ble';
+import { get } from "svelte/store"
 
 export const bluetooth = writable(new Bluetooth());
 
@@ -62,6 +63,35 @@ export const switchInitData = [
     },
 ];
 
+export const batteryVoltageCharacteristic = {
+    serviceUuid: "72737810-8272-9812-9898-98bcdef98198",
+    charUuid: "10209209-1249-8124-7127-912981298129"
+}
+
+export const batteryVoltageState = writable(0);
+
+
+export async function startVoltageNotifications() {
+    // try {
+        await get(bluetooth).startNotifying({
+            peripheralUUID: get(peripheralUUID),
+            serviceUUID: batteryVoltageCharacteristic.serviceUuid,
+            characteristicUUID: batteryVoltageCharacteristic.charUuid,
+            onNotify: (result) => {
+                let actualState = new Uint8Array(result.value)[0];
+                console.log("Notified: ", actualState);
+                // this.state = uint8View[0];
+
+                // console.log(JSON.stringify(actualSwitch))
+                batteryVoltageState.set(actualState);
+                // console.log(get(switches))
+            }
+        });
+    // } catch (err) {
+    //     console.error("Notifications failed to be setup for battery voltage: ", err)
+    // }
+}
+
 
 let switchesData = switchInitData.map(data => {
     let s = new Switch(data.label, data.state, data.enabled, data.switchNum, data.serviceUuid, data.charUuid);
@@ -74,4 +104,3 @@ let switchesData = switchInitData.map(data => {
 export const switches = writable([...switchesData]);
 
 export const peripheralUUID = writable(false);
-

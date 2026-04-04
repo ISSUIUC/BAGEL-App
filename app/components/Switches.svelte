@@ -1,8 +1,6 @@
 <script>
-    import { bluetooth, peripheralUUID, switches } from "../models/states.svelte.js";
-    import CustomToggle from './CustomToggle.svelte';
+    import { bluetooth, peripheralUUID, switches, batteryVoltageState } from "../models/states.svelte.js";
     import StatusMessage from "./StatusMessage.svelte";
-    import { get } from "svelte/store";
 
 
     import { prompt } from '@nativescript/core/ui/dialogs';
@@ -96,5 +94,9 @@
                 }
             });
         }} />
+            <stackLayout orientation="horizontal" width="100%">
+            <label>Battery Voltage: {Math.round($batteryVoltageState / 255 * 6.6 * 100) / 100}V</label>
+            </stackLayout>
+
     </stackLayout>
 </page>

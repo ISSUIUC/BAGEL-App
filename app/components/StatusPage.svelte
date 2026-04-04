@@ -94,7 +94,7 @@
 
     async function discoverAll() {
         isLoading = true;
-        try {
+        // try {
             // 1. Connection Safety Check
             let connected = await get(bluetooth).isConnected({ UUID: peripheral.UUID });
 
@@ -172,14 +172,14 @@
             //         }
             //     }
             // }
-        } catch (err) {
-            console.error("Audit failed finally:", err);
-        } finally {
-            isLoading = false;
-            console.log("theoretically found things?");
-            // Hardcode one of your known Switch UUIDs to see if it works
-            // debugWriteTest();
-        }
+        // } catch (err) {
+        //     console.error("Audit failed finally:", err);
+        // } finally {
+        //     isLoading = false;
+        //     console.log("theoretically found things?");
+        //     // Hardcode one of your known Switch UUIDs to see if it works
+        //     // debugWriteTest();
+        // }
     }
 
     /**
