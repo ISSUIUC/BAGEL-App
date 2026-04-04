@@ -1,32 +1,12 @@
 <script>
     import { Application } from "@nativescript/core";
-    import { switches, peripheralUUID, bluetooth } from "../models/states.svelte.js";
+    import { switches, peripheralUUID } from "../models/states.svelte.js";
     import StatusPage from "./StatusPage.svelte";
     import { navigate } from "@nativescript-community/svelte-native";
     import { get } from "svelte/store"
+    import { Bluetooth } from '@nativescript-community/ble';
+    const bluetooth = new Bluetooth();
 
-    async function requestAndroidPermissions() {
-        if (!Application.android) return true; // Not Android, skip
-
-        const permissions = [
-            android.Manifest.permission.BLUETOOTH_SCAN,
-            android.Manifest.permission.BLUETOOTH_CONNECT,
-            android.Manifest.permission.ACCESS_FINE_LOCATION
-        ];
-
-        // This uses the native Android request system
-        return new Promise((resolve) => {
-            const activity = Application.android.foregroundActivity || Application.android.startActivity;
-            androidx.core.app.ActivityCompat.requestPermissions(
-                activity,
-                permissions,
-                123 // Random request code
-            );
-            // For simplicity in this step, we'll return true 
-            // In a real app, you'd listen for the result callback
-            resolve(true); 
-        });
-    }
 
 
     async function requestBluetoothPermissions() {
@@ -35,15 +15,15 @@
             console.log("Checking for available permission methods...");
 
             // Strategy A: The most common Community API name
-            if (typeof (get(bluetooth)).requestLocationPermission === "function") {
+            if (typeof bluetooth.requestLocationPermission === "function") {
                 console.log("Using requestLocationPermission...");
-                return await (get(bluetooth)).requestLocationPermission();
+                return await bluetooth.requestLocationPermission();
             } 
 
             // Strategy B: The newer/specific API name
-            if (typeof (get(bluetooth)).requestBluetoothPermissions === "function") {
+            if (typeof bluetooth.requestBluetoothPermissions === "function") {
                 console.log("Using requestBluetoothPermissions...");
-                return await (get(bluetooth)).requestBluetoothPermissions();
+                return await bluetooth.requestBluetoothPermissions();
             }
 
             // Strategy C: Manually trigger the Android permission bridge
@@ -65,7 +45,7 @@
 
     async function checkPermissions() {
         // Essential for Android 12+
-        const hasPermission = await (get(bluetooth)).requestPermission({
+        const hasPermission = await bluetooth.requestPermission({
             bluetoothScan: {},
             bluetoothConnect: {},
             // Include location if you need it for older devices or beacons
@@ -81,6 +61,7 @@
     }
 
     async function toggleScan() {
+        if (isScanning) return; 
         // 1. Ask for permission first
         console.log("scan toggled");
         const allowed = await requestBluetoothPermissions();
@@ -97,11 +78,17 @@
         // }
         // await (get(bluetooth)).enable();
         console.log("things");
-        await (get(bluetooth)).startScanning({
+        // bluetooth.set(new Bluetooth());
+        try { await bluetooth.stopScanning(); } catch(e) {}
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        await bluetooth.startScanning({
             seconds: 4, // Give it more time
-            skipPermissionCheck: false, // Force a re-check
             onDiscovered: (device) => {
                 // console.log("FOUND RAW:", JSON.stringify(device));
+                if (/^BAGEL/.test(device.name)) {
+                    console.log("WE FOUND A BAGEL!!!!!!!!!!!!!!!!!!!!")
+                }
                 devices = [...devices, device];
             },
             avoidDuplicates: true
@@ -112,6 +99,7 @@
             console.log("SCAN ERROR:", err);
         });
     }
+    
 
     async function connectToDevice(device) {
         // 1. Set local loading state
@@ -120,7 +108,7 @@
         devices = [...devices]; // Trigger Svelte refresh
 
         try {
-            await (get(bluetooth)).connect({
+            await bluetooth.connect({
                 UUID: device.UUID,
                 onConnected: async (peripheral) => {
                     console.log("Link established. Settling...");
@@ -131,7 +119,7 @@
                     try {
                         // Test the connection by discovering services BEFORE navigating
                         
-                        await (get(bluetooth)).discoverServices({ peripheralUUID: peripheral.UUID });
+                        await bluetooth.discoverServices({ peripheralUUID: peripheral.UUID });
                         
                         device.connected = true;
                         devices = [...devices];
@@ -147,7 +135,7 @@
                         console.error("Connection was a ghost: ", err);
                         // Clean up if it failed
                         peripheralUUID.set(false);
-                        await (get(bluetooth)).disconnect({ UUID: peripheral.UUID });
+                        await bluetooth.disconnect({ UUID: peripheral.UUID });
 
                     }
                 },
@@ -169,7 +157,7 @@
 
     async function disconnectDevice(device) {
         try {
-            await (get(bluetooth)).disconnect({
+            await bluetooth.disconnect({
                 UUID: device.UUID
             });
             // The 'onDisconnected' callback above will handle the UI reset
@@ -181,7 +169,7 @@
     async function discoverDeviceServices(uuid) {
         // console.log("Starting Service Discovery...");
         try {
-            const services = await (get(bluetooth)).discoverServices({
+            const services = await bluetooth.discoverServices({
                 peripheralUUID: uuid
             });
             // console.log("Discovery complete! Found services:", services);
@@ -202,8 +190,7 @@
         // 2. If both have names (or both don't), sort them alphabetically
         return nameA.localeCompare(nameB);
     }).filter(val => {
-        // return val.UUID == "00:80:E1:22:25:CF";
-        return true;
+        return val.name;
     });
 </script>
 
