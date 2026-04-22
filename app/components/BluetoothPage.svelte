@@ -92,7 +92,6 @@
         console.log("things")
         await (get(bluetooth)).startScanning({
             seconds: 4, // Give it more time
-            filters:{},
             skipPermissionCheck: false, // F    orce a re-check
             onDiscovered: (device) => {
                 // console.log("FOUND RAW:", JSON.stringify(device));
