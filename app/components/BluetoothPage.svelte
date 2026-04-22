@@ -298,7 +298,6 @@
     }
 
     .connect-btn {
-        /* background-color: transparent; */
         background: linear-gradient(270deg, #1DBDE6, #F1515E);
         color: white;
         border-radius: 15%;
@@ -307,6 +306,10 @@
         padding: 0;
         margin: 0;
         min-width: 80;
+    }
+    .connect-btn:active {
+        /* background-color: transparent; */
+        background: linear-gradient(180deg, #1DBDE6, #F1515E);
     }
 
     .h1 {
