@@ -4,13 +4,13 @@
 
 <stackLayout orientation="horizontal" width="100%" class="status-indicator">
     {#if statusChar == 'D'}
-    <label class="disconnected ">Disconnected</label>
+    <label class="status ">Disconnected</label>
     {:else if statusChar == 'N'}
-    <label class="nominal ">Nominal</label>
+    <label class="status">Nominal</label>
     {:else if statusChar == 'O'}
-    <label class="off ">Off</label>
+    <label class="status">Off</label>
     {:else}
-    <label class="impossible ">Impossible</label>
+    <label class="status">Impossible</label>
     {/if}
 </stackLayout>
 
