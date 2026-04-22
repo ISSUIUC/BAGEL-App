@@ -1,5 +1,5 @@
 <script>
-    import { Application } from "@nativescript/core";
+    import { Application, Utils } from "@nativescript/core";
     import { switches, peripheralUUID } from "../models/states.svelte.js";
     import StatusPage from "./StatusPage.svelte";
     import { navigate } from "@nativescript-community/svelte-native";
@@ -83,13 +83,16 @@
         await new Promise(resolve => setTimeout(resolve, 500));
 
         await bluetooth.startScanning({
-            seconds: 4, // Give it more time
+            seconds: 2, // Give it more time
             onDiscovered: (device) => {
                 // console.log("FOUND RAW:", JSON.stringify(device));
-                if (/^BAGEL/.test(device.name)) {
+                if (/^BAGEL/.test(device.advertismentData?.localName)) {
                     console.log("WE FOUND A BAGEL!!!!!!!!!!!!!!!!!!!!")
                 }
-                devices = [...devices, device];
+                Utils.executeOnMainThread(() => {
+                    devices = [...devices, device];
+                });
+                // devices = [...devices, device];
             },
             avoidDuplicates: true
         }).then(() => {
@@ -145,6 +148,7 @@
                     // 3. Reset state n disconnect
                     device.connected = false;
                     device.connecting = false;
+                    
                     devices = [...devices]; // Refresh UI
                 }
             });
@@ -179,19 +183,26 @@
         }
     }
     // This will automatically update whenever 'devices' changes
-    $: sortedDevices = [...devices].sort((a, b) => {
-        const nameA = a.name ? a.name.toLowerCase() : "";
-        const nameB = b.name ? b.name.toLowerCase() : "";
+    // $: sortedDevices = [...devices].sort((a, b) => {
+    //     const nameA = a.advertismentData?.localName.toLowerCase() ? a.advertismentData?.localName.toLowerCase() : "";
+    //     const nameB = b.advertismentData?.localName.toLowerCase() ? b.advertismentData?.localName.toLowerCase() : "";
 
-        // 1. If one has a name and the other doesn't, put the named one first
+    //     // 1. If one has a name and the other doesn't, put the named one first
+    //     if (nameA && !nameB) return -1;
+    //     if (!nameA && nameB) return 1;
+
+    //     // 2. If both have names (or both don't), sort them alphabetically
+    //     return nameA.localeCompare(nameB);
+    // })
+    $: sortedDevices = [...devices].sort((a, b) => {
+        const nameA = a.advertismentData?.localName?.toLowerCase() ?? "";
+        const nameB = b.advertismentData?.localName?.toLowerCase() ?? "";
+
         if (nameA && !nameB) return -1;
         if (!nameA && nameB) return 1;
-
-        // 2. If both have names (or both don't), sort them alphabetically
         return nameA.localeCompare(nameB);
-    }).filter(val => {
-        return val.name;
     });
+
 </script>
 
 <page>
@@ -214,7 +225,7 @@
                     </stackLayout>
 
                     <stackLayout col="1">
-                        <label text={device.name || "Unknown Device"} class="device-name" />
+                        <label text={device.advertismentData?.localName || "Unknown Device"} class="device-name" />
                         {#if device.connected}
                             <label text="Active Connection" color="#2ecc71" fontSize="12" fontWeight="bold" />
                         {:else}
