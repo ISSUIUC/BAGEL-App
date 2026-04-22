@@ -195,14 +195,11 @@
     }
     // This will automatically update whenever 'devices' changes
     $: sortedDevices = [...devices].sort((a, b) => {
-        const nameA = a.name ? a.name.toLowerCase() : "";
-        const nameB = b.name ? b.name.toLowerCase() : "";
+        const nameA = a.advertismentData?.localName?.toLowerCase() ?? "";
+        const nameB = b.advertismentData?.localName?.toLowerCase() ?? "";
 
-        // 1. If one has a name and the other doesn't, put the named one first
         if (nameA && !nameB) return -1;
         if (!nameA && nameB) return 1;
-
-        // 2. If both have names (or both don't), sort them alphabetically
         return nameA.localeCompare(nameB);
     }).filter(val => {
         if (/^BAGEL/.test(val.name)) {
@@ -233,7 +230,7 @@
                     </stackLayout>
 
                     <stackLayout col="1">
-                        <label text={device.name || "Unknown Device"} class="device-name" />
+                        <label text={device.advertismentData?.localName || "Unknown Device"} class="device-name" />
                         {#if device.connected}
                             <label text="Active Connection" color="#2ecc71" fontSize="12" fontWeight="bold" />
                         {:else}
