@@ -82,13 +82,13 @@
 
     async function toggleScan() {
         // 1. Ask for permission first
-        const allowed = await requestBluetoothPermissions();
-        if (!allowed) return;
+        // const allowed = await requestBluetoothPermissions();
+        // if (!allowed) return;
 
         // 2. Proceed with scan
         isScanning = true;
         devices = []; // Clear list
-        await (get(bluetooth)).enable();
+        // await (get(bluetooth)).enable();
         console.log("things")
         await (get(bluetooth)).startScanning({
             seconds: 4, // Give it more time
