@@ -266,7 +266,7 @@
         font-size: 25px;
     }
     .btn.-primary:active {
-        background: linear-gradient(270deg, #F0EAFC, #61CEF2, #F538B9);
+        background: linear-gradient(270deg, #1DBDE6, #F1515E);
     }
 
     .device-card {
