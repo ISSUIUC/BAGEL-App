@@ -90,6 +90,7 @@
         devices = []; // Clear list
         // await (get(bluetooth)).enable();
         console.log("things")
+        
         await (get(bluetooth)).startScanning({
             seconds: 4, // Give it more time
             skipPermissionCheck: false, // Force a re-check
@@ -201,12 +202,14 @@
         if (!nameA && nameB) return 1;
         return nameA.localeCompare(nameB);
     }).filter(val => {
-        if (/^BAGEL/.test(val.name)) {
-            // console.log(val.name.charCodeAt(0))
-            return true;
-        }
-        return false;
+        // if (/^BAGEL/.test(val.name)) {
+        //     // console.log(val.name.charCodeAt(0))
+        //     return true;
+        // }
+        // return false;
+        return true;
     });
+// 
 </script>
 
 <page>
