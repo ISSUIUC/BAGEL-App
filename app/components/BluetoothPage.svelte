@@ -265,6 +265,9 @@
         border-radius: 10%;
         font-size: 25px;
     }
+    .btn.-primary:active {
+        background: linear-gradient(270deg, #F0EAFC, #61CEF2, #F538B9);
+    }
 
     .device-card {
         border-radius: 12;
