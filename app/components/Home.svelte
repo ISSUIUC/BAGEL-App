@@ -54,12 +54,12 @@
 
 </script>
 
-<page>
-    <actionBar title="Home" />
-    
-    <stackLayout class="p-20">
-        <label text="Welcome to the App" class="h1 text-center" />
-        
+<page actionBarHidden="true">
+    <!-- Fake gradient ActionBar -->
+    <stackLayout class="p-20">     
+        <gridLayout rows="auto" class="custom-action-bar">
+            <label text="Home" class="action-bar-title" />
+        </gridLayout>   
         <button 
             text="Pair Bluetooth Device" 
             class="btn -primary" 
@@ -67,19 +67,19 @@
         />
         <button 
             text="Go To Switches"
-            class="btn -primary"
+            class="btn -primary btn2"
             on:tap={goToSwitches}
         />
 
         <button 
             text="Disconnect"
-            class = "btn -primary"
+            class = "btn -primary btn"
             on:tap={disconnectStuff}
         />
 
         <button
             text="Change Switch Labels"
-            class="btn -primary"
+            class="btn -primary btn2"
             on:tap={goToSwitchLabels}/>
 
     </stackLayout>
@@ -87,5 +87,30 @@
 
 <style>
     .p-20 { padding: 20; }
-    .text-center { text-align: center; }
+    /* .text-center { text-align: center; } */
+    button.-primary {
+        background: linear-gradient(90deg, #C5F9D7, #F7D486, #F27A7D);
+        border-radius: 10%;
+        transition: background 0.3s ease-in-out;
+
+    }
+    button.btn2 {
+        background: linear-gradient(90deg, #C5F9D7, #F7D486, #F27A7D);
+    }
+    button.-primary:active {
+        background: linear-gradient(270deg, #C5F9D7, #F7D486, #F27A7D);
+    }
+    
+    
+    .custom-action-bar {
+        /* background-color: black; */
+        color: white;
+        font-size: 30px;
+        padding: 20px;
+        width: 100%;
+        height: auto;
+        text-align: center;
+    }
+    
+
 </style>

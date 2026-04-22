@@ -38,23 +38,28 @@
     }
 
     .disconnected {
-        color: #B20000;
-        background-color: #FF9C9C;
+        background: linear-gradient(90deg, #C11E38, #220B34);
+        color: white;
         /* color: red; */
     }
     .nominal {
-        color: green;
-        background-color: #ADFFAD;
+        background: linear-gradient(90deg, #46B83D, #111E0B);
+        color: white;
+        /* color: green;
+        background-color: #ADFFAD; */
     }
 
     .off {
-        background-color: #95D4FF;
-        color: #0063A4;
+        background: linear-gradient(90deg, #F7EA60, #3CF2DE);
+        color: black;
+        /* background-color: #95D4FF;
+        color: #0063A4; */
         /* color: blue; */
     }
 
     .impossible {
-        background-color: #FFE992;
-        color: #927500;
+        /* background-color: #FFE992; */
+        background: linear-gradient(45deg, #890000, #abc653, #ff0, #b46c3e, #fff);
+        color: black;
     }
 </style>

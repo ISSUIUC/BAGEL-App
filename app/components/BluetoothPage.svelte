@@ -215,23 +215,21 @@
 <page>
     <actionBar title="Bluetooth Scanner" />
     <scrollView>
-        <stackLayout class="p-20" backgroundColor="#f8f9fa">
-            <button text="Start scan" on:tap={toggleScan} class="btn -primary" height="60" width="100%"/>
+        <stackLayout class="p-20" backgroundColor="#000" >
+            <button text="Start Scan" on:tap={toggleScan} class="btn -primary" height="60" width="100%"/>
             {#if isScanning}
                 <activityIndicator busy={true} class="m-t-10" />
                 <label text="Searching for nearby Bagels..." horizontalAlignment="center" color="#7f8c8d" />
             {/if}
-            <label text="Nearby Devices" class="h1 m-b-10" color="#2c3e50" fontWeight="bold" />
             
             {#each sortedDevices as device}
                 <gridLayout columns="auto, *, auto" class="device-card">
                     
-                    <stackLayout col="0" class="device-icon" 
-                                backgroundColor={device.connected ? "#2ecc71" : "#3498db"}>
+                    <stackLayout col="0" class="device-icon">
                         <label text={device.connected ? "✓" : "BLE"} verticalAlignment="middle" horizontalAlignment="center" color="white" />
                     </stackLayout>
 
-                    <stackLayout col="1">
+                    <stackLayout col="1" class="device-card">
                         <label text={device.advertismentData?.localName || "Unknown Device"} class="device-name" />
                         {#if device.connected}
                             <label text="Active Connection" color="#2ecc71" fontSize="12" fontWeight="bold" />
@@ -258,27 +256,40 @@
 </page>
 
 <style>
+    stackLayout {
+        background-color: black;
+    }
+    .btn.-primary {
+        background: linear-gradient(90deg, #1DBDE6, #F1515E);
+        color: white;
+        border-radius: 10%;
+        font-size: 25px;
+    }
+
     .device-card {
-        background-color: white;
         border-radius: 12;
         margin-bottom: 12;
         padding: 15;
+        color: white;
         /* Simple shadow for Android */
         elevation: 3;
+        
+        background-color: #333;
     }
 
     .device-icon {
         width: 40;
         height: 40;
-        background-color: #3498db;
+        background: linear-gradient(180deg, #1DBDE6, #F1515E);
         border-radius: 20;
         margin-right: 15;
+
     }
 
     .device-name {
         font-size: 18;
         font-weight: 700;
-        color: #2c3e50;
+        color: white;
     }
 
     .device-uuid {
@@ -287,8 +298,10 @@
     }
 
     .connect-btn {
-        background-color: transparent;
-        color: #3498db;
+        /* background-color: transparent; */
+        background: linear-gradient(270deg, #1DBDE6, #F1515E);
+        color: white;
+        border-radius: 15%;
         font-weight: bold;
         border-width: 0;
         padding: 0;
