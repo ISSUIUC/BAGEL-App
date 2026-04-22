@@ -35,6 +35,9 @@
         width: 100%;
         border: 1px solid black;
     }
+    label {
+        font-size: 500px;
+    }
 
     .disconnected {
         background: linear-gradient(90deg, #C11E38, #220B34);
