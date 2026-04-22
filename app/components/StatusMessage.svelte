@@ -36,7 +36,8 @@
         border: 1px solid black;
     }
     label {
-        font-size: 500px;
+        /* font-size: 500px; */
+        color: white;
     }
 
     .disconnected {
