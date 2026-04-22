@@ -202,12 +202,12 @@
         if (!nameA && nameB) return 1;
         return nameA.localeCompare(nameB);
     }).filter(val => {
-        // if (/^BAGEL/.test(val.name)) {
-        //     // console.log(val.name.charCodeAt(0))
-        //     return true;
-        // }
-        // return false;
-        return true;
+        if (/^BAGEL/.test(val.advertismentData?.localName)) {
+            // console.log(val.name.charCodeAt(0))
+            return true;
+        }
+        return false;
+        // return true;
     });
 // 
 </script>
