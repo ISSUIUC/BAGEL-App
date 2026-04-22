@@ -33,7 +33,6 @@
         text-align: center;
         /* padding: 30px; */
         width: 100%;
-        height: calc(100% - 20px);
         border: 1px solid black;
     }
 
