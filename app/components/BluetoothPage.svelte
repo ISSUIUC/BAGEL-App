@@ -244,7 +244,7 @@
                         {:else if device.connected}
                             <button text="DISCONNECT" class="disconnect-btn" on:tap={() => disconnectDevice(device)} />
                         {:else}
-                            <button text="CONNECT" class="connect-btn" on:tap={() => connectToDevice(device)} />
+                            <button text="CONNECT" class="btn connect-btn" on:tap={() => connectToDevice(device)} />
                         {/if}
                     </stackLayout>
                     
@@ -260,13 +260,15 @@
         background-color: black;
     }
     .btn.-primary {
-        background: linear-gradient(90deg, #1DBDE6, #F1515E);
+        /* background: linear-gradient(90deg, #1DBDE6, #F1515E); */
+        background-color: #912F56;
         color: white;
         border-radius: 10%;
         font-size: 25px;
     }
     .btn.-primary:active {
-        background: linear-gradient(270deg, #1DBDE6, #F1515E);
+        /* background: linear-gradient(270deg, #1DBDE6, #F1515E); */
+        background-color: #7B2849;
     }
 
     .device-card {
@@ -286,7 +288,6 @@
         background: linear-gradient(180deg, #1DBDE6, #F1515E);
         border-radius: 20;
         margin-right: 15;
-
     }
 
     .device-name {
@@ -301,7 +302,8 @@
     }
 
     .connect-btn {
-        background: linear-gradient(270deg, #1DBDE6, #F1515E);
+        /* background: linear-gradient(270deg, #1DBDE6, #F1515E); */
+        background-color: #912F56;
         color: white;
         border-radius: 15%;
         font-weight: bold;
@@ -310,9 +312,10 @@
         margin: 0;
         min-width: 80;
     }
-    .connect-btn:active {
+    .connect-btn.btn:active {
         /* background-color: transparent; */
-        background: linear-gradient(180deg, #1DBDE6, #F1515E);
+        /* background: linear-gradient(180deg, #1DBDE6, #F1515E); */
+        background-color: #7B2849;
     }
 
     .h1 {

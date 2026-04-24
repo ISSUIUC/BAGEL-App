@@ -34,6 +34,9 @@
         /* padding: 30px; */
         width: 100%;
         border: 1px solid black;
+        border-radius: 10%;
+        height: auto;
+        margin-top: 10px;
     }
     label {
         /* font-size: 500px; */
@@ -41,20 +44,25 @@
     }
 
     .disconnected {
-        background: linear-gradient(90deg, #C11E38, #220B34);
+        /* background: linear-gradient(90deg, #C11E38, #220B34); */
+        background: #912F45;
+        border: 1px solid black;
+
         color: white;
         /* color: red; */
     }
     .nominal {
-        background: linear-gradient(90deg, #46B83D, #111E0B);
+        /* background: linear-gradient(90deg, #46B83D, #111E0B); */
+        background: #31B046;
         color: white;
         /* color: green;
         background-color: #ADFFAD; */
     }
 
     .off {
-        background: linear-gradient(90deg, #F7EA60, #3CF2DE);
-        color: black;
+        /* background: linear-gradient(90deg, #F7EA60, #3CF2DE); */
+        background-color: #316CB0;
+        color: white;
         /* background-color: #95D4FF;
         color: #0063A4; */
         /* color: blue; */
@@ -62,7 +70,8 @@
 
     .impossible {
         /* background-color: #FFE992; */
-        background: linear-gradient(45deg, #890000, #abc653, #ff0, #b46c3e, #fff);
-        color: black;
+        /* background: linear-gradient(45deg, #890000, #abc653, #ff0, #b46c3e, #fff); */
+        background-color: #DB9B06;
+        color: white;
     }
 </style>

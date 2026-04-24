@@ -103,15 +103,22 @@
 
 <style>
     button.arm-btn {
-        background: linear-gradient(90deg, #D7EBEB, #F4AFE9, #9D7EF3);
+        /* background: linear-gradient(90deg, #D7EBEB, #F4AFE9, #9D7EF3); */
+        background-color: #31AF9C;
         color: black;
     }
     button.btn-1 {
-        background: linear-gradient(90deg, #F0EAFC, #61CEF2, #F538B9);
+        /* background: linear-gradient(90deg, #F0EAFC, #61CEF2, #F538B9); */
+        /* background-color: #DB9B06; */
+        background-color: #A6D9F7;
         color: black;
     }
     button.btn-2 {
-        background: linear-gradient(270deg, #F0EAFC, #61CEF2, #F538B9);
+        /* background: linear-gradient(270deg, #F0EAFC, #61CEF2, #F538B9); */
+        /* background-color: #DB9B06; */
+        background-color: #A6D9F7;
         color: black;
     }
+
+    
 </style>
