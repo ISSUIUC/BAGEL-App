@@ -89,9 +89,9 @@
     .p-20 { padding: 20; }
     /* .text-center { text-align: center; } */
     button.-primary {
-        /* background: linear-gradient(90deg, #C5F9D7, #F7D486, #F27A7D); */
-        background-color: #31AF9C;
-        color: white;
+        background: linear-gradient(90deg, #C5F9D7, #F7D486, #F27A7D);
+        /* background-color: #31AF9C; */
+        color: black;
         border-radius: 10%;
         transition: background 0.3s ease-in-out;
         font-size: 20px;
