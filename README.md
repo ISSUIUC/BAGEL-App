@@ -1,6 +1,6 @@
 # Welcome to the GitHub repo for the Bagel App!
 
-This app has been written in Svelte Native, which involves writing the app in Svelte code, largely similar to Svelte used for webpaegs.
+This app has been written in Svelte Native, which involves writing the app in Svelte code, largely similar to Svelte used for webpages.
 However, instead of using HTML DOM elements, we use NativeScript elements.
 
 Setup:
