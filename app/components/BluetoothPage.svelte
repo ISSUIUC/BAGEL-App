@@ -1,170 +1,86 @@
 <script>
-    import { Application } from "@nativescript/core";
-    import { switches, peripheralUUID, bluetooth, startVoltageNotifications } from "../models/states.svelte.js";
+    import { switches, startVoltageNotifications } from "../models/states.svelte.js";
+    import {
+        requestBluetoothPermissions,
+        enableBluetooth,
+        startScanning,
+        connectToPeripheral,
+        disconnectFromPeripheral
+    } from "~/services/bleService";
+    // StatusPage import kept for the commented-out navigate() call below (its
+    // `peripheral` prop is currently never supplied via any other route).
     import StatusPage from "./StatusPage.svelte";
-    import { navigate } from "@nativescript-community/svelte-native";
-    import { get } from "svelte/store"
-
-    async function requestAndroidPermissions() {
-        if (!Application.android) return true; // Not Android, skip
-
-        const permissions = [
-            android.Manifest.permission.BLUETOOTH_SCAN,
-            android.Manifest.permission.BLUETOOTH_CONNECT,
-            android.Manifest.permission.ACCESS_FINE_LOCATION
-        ];
-
-        // This uses the native Android request system
-        return new Promise((resolve) => {
-            const activity = Application.android.foregroundActivity || Application.android.startActivity;
-            androidx.core.app.ActivityCompat.requestPermissions(
-                activity,
-                permissions,
-                123 // Random request code
-            );
-            // For simplicity in this step, we'll return true 
-            // In a real app, you'd listen for the result callback
-            resolve(true); 
-        });
-    }
-
-
-    async function requestBluetoothPermissions() {
-        try {
-            await requestAndroidPermissions();
-            console.log("Checking for available permission methods...");
-
-            // Strategy A: The most common Community API name
-            if (typeof (get(bluetooth)).requestLocationPermission === "function") {
-                console.log("Using requestLocationPermission...");
-                return await (get(bluetooth)).requestLocationPermission();
-            } 
-
-            // Strategy B: The newer/specific API name
-            if (typeof (get(bluetooth)).requestBluetoothPermissions === "function") {
-                console.log("Using requestBluetoothPermissions...");
-                return await (get(bluetooth)).requestBluetoothPermissions();
-            }
-
-            // Strategy C: Manually trigger the Android permission bridge
-            console.log("No built-in method found. Trying manual Android request...");
-            return await requestAndroidPermissions();
-            
-        } catch (e) {
-            console.error("All permission attempts failed:", e);
-            return false;
-        }
-    }
-
+    import { navigate, goBack } from "@nativescript-community/svelte-native";
     import { ObservableArray } from '@nativescript/core';
     import Switches from "./Switches.svelte";
-    // import Template from "svelte-native/components/Template.svelte";
-    // import { Template } from "@nativescript-community/svelte-native";
     let isScanning = false;
     let devices = new ObservableArray([]);
 
-    async function checkPermissions() {
-        // Essential for Android 12+
-        const hasPermission = await (get(bluetooth)).requestPermission({
-            bluetoothScan: {},
-            bluetoothConnect: {},
-            // Include location if you need it for older devices or beacons
-            location: {} 
-        });
-        return hasPermission;
-    }
-
+    // Subscribes to every switch's BLE notify characteristic once connected,
+    // so hardware-side state changes flow back into the UI (see Switch.setupNotifications).
     async function setupNotifications() {
         for (let switch_ of $switches) {
-            await switch_.setupNotifications(bluetooth);
+            await switch_.setupNotifications();
         }
     }
 
     async function toggleScan() {
-        // 1. Ask for permission first
         const allowed = await requestBluetoothPermissions();
         if (!allowed) return;
 
-        // 2. Proceed with scan
         isScanning = true;
         devices = []; // Clear list
-        await (get(bluetooth)).enable();
-        console.log("things")
-        await (get(bluetooth)).startScanning({
-            seconds: 4, // Give it more time
-            filters:{},
-            skipPermissionCheck: false, // F    orce a re-check
+        await enableBluetooth();
+        await startScanning({
+            seconds: 4,
             onDiscovered: (device) => {
-                // console.log("FOUND RAW:", JSON.stringify(device));
                 devices = [...devices, device];
-            },
-            avoidDuplicates: true
+            }
         }).then(() => {
             isScanning = false;
         }).catch((err) => {
+            // Must also clear isScanning here, or the "Searching..." spinner
+            // stays on screen forever after a failed scan.
+            isScanning = false;
             console.log("SCAN ERROR:", err);
         });
     }
 
     async function connectToDevice(device) {
-        // 1. Set local loading state
-        console.log("connect???")
         device.connecting = true;
         devices = [...devices]; // Trigger Svelte refresh
 
         try {
-            await (get(bluetooth)).connect({
-                UUID: device.UUID,
-                onConnected: async (peripheral) => {
-                    console.log("Link established. Settling...");
-                    
-                    // Give Android a moment to breathe
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-
-                    try {
-                        // Test the connection by discovering services BEFORE navigating
-                        
-                        await (get(bluetooth)).discoverServices({ peripheralUUID: peripheral.UUID });
-                        
-                        device.connected = true;
-                        devices = [...devices];
-                        peripheralUUID.set(peripheral.UUID);
-                        await startVoltageNotifications().then(() => {
-                            console.log("Voltage notifications set up.")
-                        })
-                        await setupNotifications().then(() => {
-                            console.log("things")
-                        });
-
-                        // navigate({
-                        //     page: StatusPage,
-                        //     props: {
-                        //         peripheral: peripheral
-                        //     }
-                        // })
-
-                        navigate({
-                            page: Switches
-                        });
-                    } catch (err) {
-                        console.error("Connection was a ghost: ", err);
-                        // Clean up if it failed
-                        peripheralUUID.set(false);
-                        await (get(bluetooth)).disconnect({ UUID: peripheral.UUID });
-
-                    }
-                },
+            // connectToPeripheral only resolves once discoverServices has
+            // succeeded against the device, and updates connectedPeripheralUUID itself.
+            await connectToPeripheral(device.UUID, {
                 onDisconnected: (peripheral) => {
                     console.log("Disconnected from", peripheral.UUID);
-                    peripheralUUID.set(false);
-                    // 3. Reset state n disconnect
                     device.connected = false;
                     device.connecting = false;
-                    devices = [...devices]; // Refresh UI
+                    devices = [...devices];
                 }
+            });
+
+            device.connected = true;
+            devices = [...devices];
+            await startVoltageNotifications();
+            console.log("Voltage notifications set up.");
+            await setupNotifications();
+
+            // navigate({
+            //     page: StatusPage,
+            //     props: {
+            //         peripheral: peripheral
+            //     }
+            // })
+
+            navigate({
+                page: Switches
             });
         } catch (err) {
             console.error("Connection error:", err);
+            // Reset the device card's spinner state, or it stays stuck showing "connecting".
             device.connecting = false;
             devices = [...devices];
         }
@@ -172,27 +88,13 @@
 
     async function disconnectDevice(device) {
         try {
-            await (get(bluetooth)).disconnect({
-                UUID: device.UUID
-            });
+            await disconnectFromPeripheral(device.UUID);
             // The 'onDisconnected' callback above will handle the UI reset
         } catch (err) {
             console.error("Disconnect failed:", err);
         }
     }
 
-    async function discoverDeviceServices(uuid) {
-        // console.log("Starting Service Discovery...");
-        try {
-            const services = await (get(bluetooth)).discoverServices({
-                peripheralUUID: uuid
-            });
-            // console.log("Discovery complete! Found services:", services);
-            // If you reach this point, the other device DEFINITELY knows you are there.
-        } catch (err) {
-            // console.error("Discovery failed. The device might have dropped the link:", err);
-        }
-    }
     // This will automatically update whenever 'devices' changes
     $: sortedDevices = [...devices].sort((a, b) => {
         const nameA = a.name ? a.name.toLowerCase() : "";
@@ -205,29 +107,38 @@
         // 2. If both have names (or both don't), sort them alphabetically
         return nameA.localeCompare(nameB);
     }).filter(val => {
-        if (/^BAGEL/.test(val.name)) {
-            // console.log(val.name.charCodeAt(0))
-            return true;
-        }
-        return false;
+        // Only show BAGEL devices. Guard against a missing name - RegExp.test
+        // would otherwise coerce `undefined` to the string "undefined".
+        return !!val.name && /^BAGEL/.test(val.name);
     });
 </script>
 
 <page>
-    <actionBar title="Bluetooth Scanner" />
+    <actionBar title="Bluetooth Scanner">
+        <navigationButton text="Back" android.systemIcon="ic_menu_back" on:tap={goBack} />
+    </actionBar>
     <scrollView>
         <stackLayout class="p-20" backgroundColor="#f8f9fa">
+            <label text="Scan for and connect to your BAGEL device"
+                   class="body m-b-10" color="#7f8c8d" textWrap="true" />
             <button text="Start scan" on:tap={toggleScan} class="btn -primary" height="60" width="100%"/>
             {#if isScanning}
                 <activityIndicator busy={true} class="m-t-10" />
                 <label text="Searching for nearby Bagels..." horizontalAlignment="center" color="#7f8c8d" />
             {/if}
             <label text="Nearby Devices" class="h1 m-b-10" color="#2c3e50" fontWeight="bold" />
-            
+
+            {#if !isScanning && sortedDevices.length === 0}
+                <stackLayout class="card">
+                    <label text="No BAGEL devices found yet." class="body text-center" />
+                    <label text="Tap &quot;Start scan&quot; above to search nearby." class="caption text-center m-t-5" />
+                </stackLayout>
+            {/if}
+
             {#each sortedDevices as device}
                 <gridLayout columns="auto, *, auto" class="device-card">
-                    
-                    <stackLayout col="0" class="device-icon" 
+
+                    <stackLayout col="0" class="device-icon"
                                 backgroundColor={device.connected ? "#2ecc71" : "#3498db"}>
                         <label text={device.connected ? "✓" : "BLE"} verticalAlignment="middle" horizontalAlignment="center" color="white" />
                     </stackLayout>
@@ -250,10 +161,10 @@
                             <button text="CONNECT" class="connect-btn" on:tap={() => connectToDevice(device)} />
                         {/if}
                     </stackLayout>
-                    
+
                 </gridLayout>
             {/each}
-            
+
         </stackLayout>
     </scrollView>
 </page>
@@ -311,7 +222,7 @@
         background-color: transparent;
         border-width: 0;
     }
-    
+
     /* Animation for the 'Connecting' state */
     .device-card {
         transition: background-color 0.2s;

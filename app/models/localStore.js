@@ -1,21 +1,30 @@
 import { writable } from 'svelte/store';
 import localStorage from '@nativescript-use/nativescript-localstorage';
 
+/**
+ * Creates a Svelte writable store whose value is persisted to disk under
+ * `key`, so it survives app restarts. On creation it loads any previously
+ * saved value (falling back to `initialValue` if there isn't one), and every
+ * subsequent `.set()`/`.update()` on the store writes the new value back out.
+ */
 export const localStore = (key, initialValue) => {
-  // Use the initialValue if not in a browser environment (SSR), or if the key doesn't exist in localStorage
   let storedValue = initialValue;
   if (localStorage.has(key)) {
-    storedValue = JSON.parse(localStorage.getItem(key));
+    try {
+      storedValue = JSON.parse(localStorage.getItem(key));
+    } catch (err) {
+      // Corrupted/unexpected stored value - fall back to initialValue rather
+      // than crash the app at startup.
+      console.error(`localStore: failed to parse stored value for "${key}", using default`, err);
+    }
   }
 
-  // Create a writable Svelte store
-    const store = writable(storedValue);
+  const store = writable(storedValue);
 
-  // Subscribe to the store's changes and update localStorage
-    store.subscribe((current) => {
-        // Stringify the value before saving it to localStorage
-        localStorage.setItem(key, JSON.stringify(current));
-    });
+  // Persist every change back to disk, JSON-encoded (localStorage only stores strings).
+  store.subscribe((current) => {
+    localStorage.setItem(key, JSON.stringify(current));
+  });
 
   return store;
 };

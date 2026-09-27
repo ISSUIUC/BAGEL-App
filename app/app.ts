@@ -7,4 +7,6 @@ purpose of the file is to pass control to the app’s first page.
 import { svelteNativeNoFrame } from '@nativescript-community/svelte-native'
 import App from './App.svelte'
 
+// Boots the native runtime and mounts App.svelte as the root view. "NoFrame"
+// because App.svelte supplies its own <frame> for navigation.
 svelteNativeNoFrame(App, {})

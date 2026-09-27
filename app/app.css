@@ -1,4 +1,146 @@
-﻿.fab {
+﻿/* Global app-wide styles. Component <style> blocks are scoped to that one
+   .svelte file (Svelte adds a unique class per component), so any class meant
+   to be shared across screens - like the .btn/-primary/.h1/.h2 "theme"
+   classes several components already reference in their markup - has to live
+   here instead, or it silently does nothing and the element falls back to
+   the platform's default widget look.
+
+   Palette below formalizes the "flat UI" colors already used ad hoc across
+   BluetoothPage.svelte and StatusMessage.svelte, so new screens can reach for
+   the same classes instead of re-typing hex values:
+     primary (blue)    #3498db  - actions, links, primary buttons
+     success (green)   #2ecc71  - connected/nominal/on states
+     danger  (red)     #e74c3c  - disconnect/error/off-hazard states
+     warning (amber)   #f39c12  - caution/unexpected states
+     ink   (dark slate) #2c3e50 - headings, primary text
+     muted (grey)       #7f8c8d - secondary/caption text
+     border (light grey)#e0e0e0 - dividers, card borders
+     surface (off-white)#f8f9fa - card/section backgrounds
+*/
+
+/* ---- Typography ---- */
+
+.h1 {
+  font-size: 24;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.h2 {
+  font-size: 20;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.h3 {
+  font-size: 17;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.body {
+  font-size: 14;
+  color: #333333;
+}
+
+.caption {
+  font-size: 12;
+  color: #7f8c8d;
+}
+
+/* ---- Buttons ----
+   Pair .btn with exactly one color variant, e.g. class="btn -primary". */
+
+.btn {
+  border-radius: 6;
+  padding: 14 16;
+  font-size: 16;
+  font-weight: 600;
+}
+
+.btn.-primary {
+  background-color: #3498db;
+  color: white;
+}
+
+.btn.-success {
+  background-color: #2ecc71;
+  color: white;
+}
+
+.btn.-danger {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.btn.-outline {
+  background-color: transparent;
+  color: #3498db;
+  border-width: 2;
+  border-color: #3498db;
+}
+
+/* ---- Status badges ----
+   Matches the color scheme StatusMessage.svelte already uses for D/N/O
+   states, generalized for reuse anywhere a small colored status pill is needed. */
+
+.badge {
+  border-radius: 4;
+  padding: 4 10;
+  font-size: 12;
+  font-weight: bold;
+  text-align: center;
+}
+
+.badge.-success {
+  background-color: #ADFFAD;
+  color: green;
+}
+
+.badge.-danger {
+  background-color: #FF9C9C;
+  color: #B20000;
+}
+
+.badge.-info {
+  background-color: #95D4FF;
+  color: #0063A4;
+}
+
+.badge.-warning {
+  background-color: #FFE992;
+  color: #927500;
+}
+
+/* ---- Cards ----
+   Matches BluetoothPage.svelte's .device-card look, generalized for reuse. */
+
+.card {
+  background-color: white;
+  border-radius: 12;
+  padding: 15;
+  elevation: 3;
+}
+
+/* ---- Spacing scale ---- */
+
+.p-10 { padding: 10; }
+.p-15 { padding: 15; }
+.p-20 { padding: 20; }
+
+.m-t-5  { margin-top: 5; }
+.m-t-10 { margin-top: 10; }
+.m-b-5  { margin-bottom: 5; }
+.m-b-10 { margin-bottom: 10; }
+.m-b-20 { margin-bottom: 20; }
+
+.text-center { text-align: center; }
+
+/* Font Awesome icon-font classes below map to the bundled fonts in
+   app/fonts/ - use .fas/.far/.fab on a label's `class` with the icon glyph
+   as its text to render an icon. No component currently uses these, but
+   they're available app-wide since this file is the global stylesheet. */
+.fab {
   font-family: 'Font Awesome 5 Brands', 'fa-brands-400';
   font-weight: 400;
 }

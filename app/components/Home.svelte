@@ -1,11 +1,11 @@
 <script>
-    // import { navigateTo } from "svelte-native";
+    // Landing page: routes to the other screens via svelte-native's navigate().
     import { navigate } from "@nativescript-community/svelte-native";
-    import BluetoothPage from "./BluetoothPage.svelte"; // Ensure the path is correct
+    import BluetoothPage from "./BluetoothPage.svelte";
     import Switches from "./Switches.svelte";
     import RenameSwitches from "./RenameSwitches.svelte";
-    import { get } from "svelte/store";
-    import { peripheralUUID, bluetooth } from "../models/states.svelte.js";  //😭
+    import { disconnectFromPeripheral } from "~/services/bleService";
+
     function goToBluetooth() {
         navigate({
             page: BluetoothPage,
@@ -44,48 +44,51 @@
 
     }
 
+    // Disconnects the currently paired device, if any. disconnectFromPeripheral
+    // itself no-ops when nothing is connected, so this can't throw an
+    // unhandled rejection the way calling the BLE plugin directly used to.
     async function disconnectStuff() {
-        console.log(get(peripheralUUID));
-        await get(bluetooth).disconnect({ UUID: get(peripheralUUID) }).then(() => {
-            console.log("howdy doody");
-        });
-        console.warn("howdy");
+        try {
+            await disconnectFromPeripheral();
+            console.log("Disconnected.");
+        } catch (err) {
+            console.error("Disconnect failed:", err);
+        }
     }
 
 </script>
 
 <page>
     <actionBar title="Home" />
-    
-    <stackLayout class="p-20">
-        <label text="Welcome to the App" class="h1 text-center" />
-        
-        <button 
-            text="Pair Bluetooth Device" 
-            class="btn -primary" 
-            on:tap={goToBluetooth} 
-        />
-        <button 
-            text="Go To Switches"
-            class="btn -primary"
-            on:tap={goToSwitches}
-        />
 
-        <button 
-            text="Disconnect"
-            class = "btn -primary"
-            on:tap={disconnectStuff}
-        />
+    <scrollView>
+        <stackLayout class="p-20">
+            <label text="BAGEL" class="h1 text-center" />
+            <label text="Connect to your BAGEL device and control its switches"
+                   class="body text-center m-b-20" textWrap="true" />
 
-        <button
-            text="Change Switch Labels"
-            class="btn -primary"
-            on:tap={goToSwitchLabels}/>
+            <label text="CONNECTION" class="caption m-b-5" />
+            <button
+                text="Pair Bluetooth Device"
+                class="btn -primary m-b-10"
+                on:tap={goToBluetooth}
+            />
+            <button
+                text="Disconnect"
+                class="btn -outline m-b-20"
+                on:tap={disconnectStuff}
+            />
 
-    </stackLayout>
+            <label text="CONTROLS" class="caption m-b-5" />
+            <button
+                text="Go To Switches"
+                class="btn -primary m-b-10"
+                on:tap={goToSwitches}
+            />
+            <button
+                text="Change Switch Labels"
+                class="btn -outline"
+                on:tap={goToSwitchLabels}/>
+        </stackLayout>
+    </scrollView>
 </page>
-
-<style>
-    .p-20 { padding: 20; }
-    .text-center { text-align: center; }
-</style>

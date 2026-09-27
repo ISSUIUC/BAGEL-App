@@ -1,13 +1,31 @@
 <script>
-    import { bluetooth, switches } from "../models/states.svelte.js";
+    // Debug/audit tool: walks a connected device's full BLE service/characteristic
+    // tree and displays it. This is how the hardcoded UUIDs in
+    // states.svelte.js's switchInitData were originally captured.
+    //
+    // NOTE: currently unreachable - the navigate() calls that would open this
+    // page (in BluetoothPage.svelte / Home.svelte) are commented out, so
+    // `peripheral` is never actually supplied by anything right now.
+    import { switches } from "../models/states.svelte.js";
     import { goBack } from "@nativescript-community/svelte-native";
     import { get } from "svelte/store";
     import Switch from '~/models/Switch';
+    import {
+        isPeripheralConnected,
+        connectToPeripheral,
+        discoverAllServices,
+        readCharacteristic,
+        writeByte
+    } from "~/services/bleService";
     export let peripheral; // Passed from the previous page
-    
+
     let services = [];
     let isLoading = true;
 
+    // Local, page-only copy of switch metadata for the "Toggle CAM" button
+    // below - NOT the same data as switchInitData in states.svelte.js, and
+    // has drifted from it (different labels/initial states). Only switchNum 3
+    // ("CAM") is actually used from this array.
     const switchInitData = [
         {
             label: "Disconnected",
@@ -58,75 +76,40 @@
             charUuid: "97198188-9289-2bcd-98f9-8e9898e71231"
         },
     ];
+    // NOTE: togglingSwitch is built but never used anywhere below - the
+    // "Toggle CAM" button instead looks up the real switch from the `switches`
+    // store by label. Kept as-is; constructor call updated to match Switch's
+    // current signature (state, enabled, switchNum, serviceUUID, charUUID) -
+    // Switch no longer takes a label param (see Switch.js: labels come from
+    // switchLabels instead).
     let togglingSwitchModel = switchInitData[2];
-    let togglingSwitch = new Switch(togglingSwitchModel.label, togglingSwitchModel.state, togglingSwitchModel.enabled, togglingSwitchModel.switchNum, togglingSwitchModel.serviceUuid, togglingSwitchModel.charUuid);
-
-    /**
-     * Writes a single byte to a specific BLE characteristic
-     * @param {string} peripheralUUID - The ID of the device
-     * @param {string} serviceUUID - The ID of the service
-     * @param {string} characteristicUUID - The ID of the characteristic
-     * @param {number} byteValue - The byte to send (0-255)
-     */
-    async function writeByteToCharacteristic(peripheralUUID, serviceUUID, characteristicUUID, byteValue) {
-        try {
-            console.log(`Sending byte ${byteValue} to ${characteristicUUID}...`);
-
-            // 1. Convert the number into a 1-byte Uint8Array
-            const data = new Uint8Array([byteValue]);
-            const value = Array.from(data);
-            // 2. Perform the write operation
-            await get(bluetooth).write({
-                peripheralUUID: peripheralUUID,
-                serviceUUID: serviceUUID,
-                characteristicUUID: characteristicUUID,
-                value: value // We pass the underlying ArrayBuffer
-            });
-
-            console.log(`Write for ${characteristicUUID} successful!`);
-            return true;
-        } catch (err) {
-            console.error("Write failed:", err);
-            // Common error: 'Characteristic does not support write'
-            return false;
-        }
-    }
+    let togglingSwitch = new Switch(togglingSwitchModel.state, togglingSwitchModel.enabled, togglingSwitchModel.switchNum, togglingSwitchModel.serviceUuid, togglingSwitchModel.charUuid);
 
     async function discoverAll() {
         isLoading = true;
         // try {
             // 1. Connection Safety Check
-            let connected = await get(bluetooth).isConnected({ UUID: peripheral.UUID });
+            let connected = await isPeripheralConnected(peripheral.UUID);
 
             if (!connected) {
                 console.log("Device not ready. Attempting a quick reconnect...");
-                await get(bluetooth).connect({ 
-                    UUID: peripheral.UUID,
-                    autoConnect: false 
-                });
-                await new Promise(r => setTimeout(r, 1000));
+                await connectToPeripheral(peripheral.UUID);
             }
 
             console.log("Starting full discovery for", peripheral.UUID);
-            
+
             // 2. Perform the full tree discovery
-            const result = await get(bluetooth).discoverAll({
-                peripheralUUID: peripheral.UUID
-            });
+            const result = await discoverAllServices(peripheral.UUID);
 
             // 3. Mapping Logic: Digging into Services and Characteristics
             const mappedServices = await Promise.all(result.services.map(async (service) => {
                 const characteristics = await Promise.all(service.characteristics.map(async (char) => {
                     let value = "N/A";
-                    
+
                     // Only try to read if the hardware says it's allowed
                     if (char.properties.read) {
                         try {
-                            const readResult = await get(bluetooth).read({
-                                peripheralUUID: peripheral.UUID,
-                                serviceUUID: service.UUID,
-                                characteristicUUID: char.UUID
-                            });
+                            const readResult = await readCharacteristic(peripheral.UUID, service.UUID, char.UUID);
                             console.log("ServiceUUID: ", service.UUID);
                             console.log("CharUUID: ", char.UUID);
                             // Convert the raw ArrayBuffer to a string or hex
@@ -203,6 +186,9 @@
             return "Binary Data";
         }
     }
+    // NOTE: currently unused - was a scratch helper for manually testing a
+    // single hardcoded write during hardware bring-up. Left in place for
+    // reference should similar low-level debugging be needed again.
     async function debugWriteTest() {
         console.log("1. Entering debugWriteTest");
         
@@ -212,11 +198,6 @@
             const testChar = "72671834-8282-0308-2383-838bcde29092";
 
             console.log("2. Defining Buffer...");
-            const uint8 = new Uint8Array([0]);
-            const value = Array.from(uint8); // Convert to a standard JS array
-            // const buffer = uint8.buffer;
-            
-            // console.log("3. Buffer Length is:", buffer.byteLength);
             // console.log("Enabling Notifications to 'prime' the MCU...");
             // await get(bluetooth).startNotifying({
             //     peripheralUUID: peripheral.UUID,
@@ -230,18 +211,8 @@
 
             console.log("Now trying the write...");
             console.log("4. Starting 1s timeout for write...");
-            try {
-                console.log("5. Inside timeout, calling write...");
-                await get(bluetooth).write({
-                    peripheralUUID: peripheral.UUID,
-                    serviceUUID: testService,
-                    characteristicUUID: testChar,
-                    value: value
-                });
-                console.log("6. WRITE SUCCESSFUL!");
-            } catch (writeErr) {
-                console.error("6. WRITE FAILED:", writeErr);
-            }
+            const ok = await writeByte(testService, testChar, 0);
+            console.log(ok ? "6. WRITE SUCCESSFUL!" : "6. WRITE FAILED");
 
         } catch (fatalErr) {
             console.error("FATAL ERROR BEFORE WRITE:", fatalErr);
@@ -254,7 +225,7 @@
 
 <page>
     <actionBar title="Device Status">
-        <navigationButton text="Back" on:tap={goBack} />
+        <navigationButton text="Back" android.systemIcon="ic_menu_back" on:tap={goBack} />
     </actionBar>
 
     <gridLayout rows="*, auto">
@@ -267,12 +238,19 @@
             <scrollView row="0">
                 <stackLayout class="p-15">
                 
-                    <button 
+                    <button
                         text="Toggle CAM"
                         class="btn -primary"
                         on:tap={async () => {
+                            // Looks up the switch by its current (renamable) label, so
+                            // this breaks if "CAM" has been renamed via RenameSwitches.
+                            // Guarded so that just no-ops instead of throwing.
                             const actualSwitch = get(switches).filter(obj => obj.label == "CAM")[0];
-                            await actualSwitch.toggle(bluetooth, peripheral.UUID);
+                            if (!actualSwitch) {
+                                console.warn('No switch currently labeled "CAM" - was it renamed?');
+                                return;
+                            }
+                            await actualSwitch.toggle();
                         }}
                     />
                     <label text={peripheral.name || "Device Detail"} class="h2 m-b-10" />

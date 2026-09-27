@@ -1,4 +1,7 @@
 <script>
+    // NOTE: currently unused - Switches.svelte renders plain On/Off buttons
+    // instead of this component (its usage there is commented out). Kept as
+    // the intended native-<switch>-based alternative UI for toggling a switch.
     import { createEventDispatcher } from 'svelte';
 
     const dispatch = createEventDispatcher();

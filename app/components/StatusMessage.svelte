@@ -1,60 +1,20 @@
-<script>    
+<script>
+    // Small badge showing a switch's hardware-reported state. statusChar is
+    // one of 'D'/'N'/'O' (see the ASCII state codes in Switch.js) derived from
+    // the switch's numeric `state` byte via String.fromCharCode in Switches.svelte.
+    // Uses the shared .badge classes from app.css instead of its own colors,
+    // so it stays visually consistent with any other status badge in the app.
     export let statusChar;
+
+    $: text = statusChar == 'D' ? 'Disconnected'
+        : statusChar == 'N' ? 'Nominal'
+        : statusChar == 'O' ? 'Off'
+        : 'Impossible';
+
+    $: variant = statusChar == 'D' ? '-danger'
+        : statusChar == 'N' ? '-success'
+        : statusChar == 'O' ? '-info'
+        : '-warning';
 </script>
 
-<stackLayout orientation="horizontal" width="100%" class="status-indicator">
-    {#if statusChar == 'D'}
-    <label class="disconnected status">Disconnected</label>
-    {:else if statusChar == 'N'}
-    <label class="nominal status">Nominal</label>
-    {:else if statusChar == 'O'}
-    <label class="off status">Off</label>
-    {:else}
-    <label class="impossible status">Impossible</label>
-    {/if}
-</stackLayout>
-
-<style>
-    .status-indicator {
-        /* background-color: lightgrey; */
-        width: 100%;
-        margin: auto;
-        padding: auto;
-        text-align: center;
-        display: flex;
-        align-items: center;
-        align-content: center;
-        justify-content: center;
-        justify-items: center;
-        border: 1px solid black;
-    }
-
-    .status {
-        text-align: center;
-        /* padding: 30px; */
-        width: 100%;
-        height: calc(100% - 20px);
-        border: 1px solid black;
-    }
-
-    .disconnected {
-        color: #B20000;
-        background-color: #FF9C9C;
-        /* color: red; */
-    }
-    .nominal {
-        color: green;
-        background-color: #ADFFAD;
-    }
-
-    .off {
-        background-color: #95D4FF;
-        color: #0063A4;
-        /* color: blue; */
-    }
-
-    .impossible {
-        background-color: #FFE992;
-        color: #927500;
-    }
-</style>
+<label text={text} class="badge {variant}" />
