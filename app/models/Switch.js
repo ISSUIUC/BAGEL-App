@@ -2,17 +2,17 @@ import { switches, switchLabels } from "./states.svelte";
 import { get } from "svelte/store";
 import { writeByte, subscribeToByteNotifications } from "~/services/bleService";
 
-// ASCII codes used as the single-byte "state" value the BAGEL hardware reports
-// over BLE notifications, and that Switch/StatusMessage compare against.
-const D_ascii = 68; // 'D' - Disconnected (no/never-seen hardware state)
-const N_ascii = 78; // 'N' - Nominal (switch reporting a healthy "on" state)
-const O_ascii = 79; // 'O' - Off
-
 /**
  * Represents one physical switch on the BAGEL device: its current state,
  * whether it's currently allowed to be toggled, and the BLE service/characteristic
  * UUIDs used to read/write/notify it. UUIDs are fixed by the device firmware
  * (see switchInitData in states.svelte.js), not discovered at runtime.
+ *
+ * `state` is the single-byte ASCII code the hardware reports over BLE: 68='D'
+ * (Disconnected), 78='N' (Nominal), 79='O' (Off). Switch itself doesn't branch
+ * on these values - it just stores and forwards the byte; StatusMessage.svelte
+ * is what maps state to D/N/O, falling back to a generic "Impossible" badge
+ * for anything else (e.g. a corrupted read).
  *
  * All actual BLE I/O is delegated to services/bleService.js - this class only
  * knows its own identity (UUIDs, switchNum) and current state, not how to
@@ -32,22 +32,6 @@ export default class Switch {
     // switchNum, so they survive renames/app restarts independent of this instance.
     get label() {
         return get(switchLabels[this.switchNum - 1]);
-    }
-
-    /**
-     * Flips the switch based on its last known hardware state: sends "off" (0)
-     * if currently Nominal, otherwise sends "on" (1). Does not optimistically
-     * update this.state locally - the real state only updates once the
-     * hardware confirms via the BLE notification set up in setupNotifications().
-     */
-    async toggle() {
-        if (!this.enabled)
-            return;
-        if (this.state == N_ascii) {
-            await writeByte(this.serviceUUID, this.charUUID, 0);
-        } else {
-            await writeByte(this.serviceUUID, this.charUUID, 1);
-        }
     }
 
     // Updates local state only - does not talk to the hardware. Used to reflect

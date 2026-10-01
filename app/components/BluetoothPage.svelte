@@ -58,7 +58,7 @@
                     console.log("Disconnected from", peripheral.UUID);
                     device.connected = false;
                     device.connecting = false;
-                    devices = [...devices];
+                    devices = [...devices]; // Refresh UI
                 }
             });
 

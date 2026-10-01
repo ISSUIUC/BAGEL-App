@@ -6,84 +6,17 @@
     // NOTE: currently unreachable - the navigate() calls that would open this
     // page (in BluetoothPage.svelte / Home.svelte) are commented out, so
     // `peripheral` is never actually supplied by anything right now.
-    import { switches } from "../models/states.svelte.js";
     import { goBack } from "@nativescript-community/svelte-native";
-    import { get } from "svelte/store";
-    import Switch from '~/models/Switch';
     import {
         isPeripheralConnected,
         connectToPeripheral,
         discoverAllServices,
-        readCharacteristic,
-        writeByte
+        readCharacteristic
     } from "~/services/bleService";
     export let peripheral; // Passed from the previous page
 
     let services = [];
     let isLoading = true;
-
-    // Local, page-only copy of switch metadata for the "Toggle CAM" button
-    // below - NOT the same data as switchInitData in states.svelte.js, and
-    // has drifted from it (different labels/initial states). Only switchNum 3
-    // ("CAM") is actually used from this array.
-    const switchInitData = [
-        {
-            label: "Disconnected",
-            state: false,
-            enabled: false,
-            switchNum: 1,
-            serviceUuid: "72737810-8272-9812-9898-98bcdef98198",
-            charUuid: "1ab83456-7653-7384-2737-484838483848"
-        },
-        {
-            label: "Blue Raven",
-            state: false,
-            enabled: true,
-            switchNum: 2,
-            serviceUuid: "72737810-8272-9812-9898-98bcdef98198",
-            charUuid: "637777ab-c738-7de7-2898-273738838838"
-        },
-        {
-            label: "CAM",
-            state: true,
-            enabled: true,
-            switchNum: 3,
-            serviceUuid: "72737810-8272-9812-9898-98bcdef98198",
-            charUuid: "72671834-8282-0308-2383-838bcde29092"
-        },
-        {
-            label: "TeleMega Pyro",
-            state: false,
-            enabled: true,
-            switchNum: 4,
-            serviceUuid: "73737373-7371-9192-1095-09128927266b",
-            charUuid: "987187ab-d937-fe72-8374-020927167827"
-        },
-        {
-            label: "TeleMega Power",
-            state: false,
-            enabled: true,
-            switchNum: 5,
-            serviceUuid: "73737373-7371-9192-1095-09128927266b",
-            charUuid: "67374498-9248-9249-8249-834893483bcd"
-        },
-        {
-            label: "MIDAS",
-            state: true,
-            enabled: true,
-            switchNum: 6,
-            serviceUuid: "73737373-7371-9192-1095-09128927266b",
-            charUuid: "97198188-9289-2bcd-98f9-8e9898e71231"
-        },
-    ];
-    // NOTE: togglingSwitch is built but never used anywhere below - the
-    // "Toggle CAM" button instead looks up the real switch from the `switches`
-    // store by label. Kept as-is; constructor call updated to match Switch's
-    // current signature (state, enabled, switchNum, serviceUUID, charUUID) -
-    // Switch no longer takes a label param (see Switch.js: labels come from
-    // switchLabels instead).
-    let togglingSwitchModel = switchInitData[2];
-    let togglingSwitch = new Switch(togglingSwitchModel.state, togglingSwitchModel.enabled, togglingSwitchModel.switchNum, togglingSwitchModel.serviceUuid, togglingSwitchModel.charUuid);
 
     async function discoverAll() {
         isLoading = true;
@@ -160,8 +93,6 @@
         // } finally {
         //     isLoading = false;
         //     console.log("theoretically found things?");
-        //     // Hardcode one of your known Switch UUIDs to see if it works
-        //     // debugWriteTest();
         // }
     }
 
@@ -186,39 +117,6 @@
             return "Binary Data";
         }
     }
-    // NOTE: currently unused - was a scratch helper for manually testing a
-    // single hardcoded write during hardware bring-up. Left in place for
-    // reference should similar low-level debugging be needed again.
-    async function debugWriteTest() {
-        console.log("1. Entering debugWriteTest");
-        
-        try {
-            // Hardcode these directly here just to be 100% sure
-            const testService = "72737810-8272-9812-9898-98bcdef98198";
-            const testChar = "72671834-8282-0308-2383-838bcde29092";
-
-            console.log("2. Defining Buffer...");
-            // console.log("Enabling Notifications to 'prime' the MCU...");
-            // await get(bluetooth).startNotifying({
-            //     peripheralUUID: peripheral.UUID,
-            //     serviceUUID: testService,
-            //     characteristicUUID: testChar,
-            //     onNotify: (res) => console.log("MCU sent data back!", JSON.stringify(res.value))
-            // });
-
-            // Wait a split second for the handshake to settle
-            await new Promise(r => setTimeout(r, 500));
-
-            console.log("Now trying the write...");
-            console.log("4. Starting 1s timeout for write...");
-            const ok = await writeByte(testService, testChar, 0);
-            console.log(ok ? "6. WRITE SUCCESSFUL!" : "6. WRITE FAILED");
-
-        } catch (fatalErr) {
-            console.error("FATAL ERROR BEFORE WRITE:", fatalErr);
-        }
-    }
-
     // Start discovery on mount
     discoverAll();
 </script>
@@ -238,21 +136,6 @@
             <scrollView row="0">
                 <stackLayout class="p-15">
                 
-                    <button
-                        text="Toggle CAM"
-                        class="btn -primary"
-                        on:tap={async () => {
-                            // Looks up the switch by its current (renamable) label, so
-                            // this breaks if "CAM" has been renamed via RenameSwitches.
-                            // Guarded so that just no-ops instead of throwing.
-                            const actualSwitch = get(switches).filter(obj => obj.label == "CAM")[0];
-                            if (!actualSwitch) {
-                                console.warn('No switch currently labeled "CAM" - was it renamed?');
-                                return;
-                            }
-                            await actualSwitch.toggle();
-                        }}
-                    />
                     <label text={peripheral.name || "Device Detail"} class="h2 m-b-10" />
                     <label text="UUID: {peripheral.UUID}" class="body m-b-20" color="gray" />
 

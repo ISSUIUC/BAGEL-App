@@ -2,38 +2,16 @@
     import { switches, batteryVoltageState } from "../models/states.svelte.js";
     import StatusMessage from "./StatusMessage.svelte";
     import { prompt } from '@nativescript/core/ui/dialogs';
-    import { writeByte } from "~/services/bleService";
     import { goBack } from "@nativescript-community/svelte-native";
 
     // Global safety interlock: the On/Off buttons below stay disabled until this
-    // is true. Note this is purely a UX guard (the "password" is a plain string
-    // baked into the app bundle), not real security against a determined user.
+    // is true. Not real security - the "password" is a plain string in the app
+    // bundle, and the dialog below literally shows you the phrase to type.
     let isArmed = false;
 
     // Battery notify characteristic reports a single byte (0-255); the
     // device's battery range maps linearly to 0-6.6V.
     $: voltage = Math.round($batteryVoltageState / 255 * 6.6 * 100) / 100;
-
-    // NOTE: not currently used anywhere - the live UI below calls
-    // customSwitch.bleSendVal(...) directly from each button's on:tap instead.
-    // Kept here (and the matching commented-out <CustomToggle> below) as a
-    // reference for the toggle-with-rollback flow this was meant to support.
-    // Now delegates to bleService.writeByte(), which already handles the
-    // reconnect-if-dropped dance and reports success/failure, instead of
-    // duplicating that logic here (as it did before the bleService refactor).
-    async function handleToggle(customSwitch) {
-        customSwitch.toggle();
-        const valueToSend = customSwitch.state ? 0x01 : 0x00;
-
-        const ok = await writeByte(customSwitch.serviceUUID, customSwitch.charUUID, valueToSend);
-        if (!ok) {
-            // UI rollback: the hardware didn't get the message, so flip the
-            // switch back and notify the store so the UI re-renders it.
-            customSwitch.state = !customSwitch.state;
-            switches.update(current => [...current]);
-            alert("Action failed: Device unreachable.");
-        }
-    }
 
     function toggleArm() {
         if (isArmed) {
@@ -69,13 +47,6 @@
             </stackLayout>
 
             {#each ($switches).sort((a, b) => a.switchNum - b.switchNum) as customSwitch (customSwitch.switchNum)}
-                <!-- Currently unused in favor of the explicit On/Off buttons below.
-                     CustomToggle.svelte renders a native <switch> toggle bound to
-                     handleToggle() above; left here as the intended alternative UI. -->
-                <!-- <CustomToggle
-                    switchModel={customSwitch}
-                    on:toggle={() => handleToggle(customSwitch)}
-                /> -->
                 <stackLayout class="card switch-card">
                     <stackLayout orientation="horizontal" width="100%" class="m-b-10">
                         <label text={customSwitch.label} class="h3" width="65%" verticalAlignment="middle" />
