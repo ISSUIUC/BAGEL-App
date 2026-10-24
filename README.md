@@ -46,4 +46,4 @@ Building the app:
 
 If you have any questions, ask Melody and Alyssa.
 
-Alternatively, ask our good friend Claude.
+Alternatively, ask our good friend Chat(GPT).
