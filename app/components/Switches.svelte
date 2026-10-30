@@ -1,9 +1,10 @@
 <script>
     import { bluetooth, peripheralUUID, switches, batteryVoltageState } from "../models/states.svelte.js";
     import StatusMessage from "./StatusMessage.svelte";
+    // import { navigate } from "svelte-native";
+    import { goBack } from "@nativescript-community/svelte-native";
 
-
-    import { prompt } from '@nativescript/core/ui/dialogs';
+    // import { prompt } from '@nativescript/core/ui/dialogs';
 
     
 
@@ -59,7 +60,9 @@
 </script>
 
 <page>
-    <actionBar title="Switches" />
+    <actionBar title="Switches">
+            <!-- <navigationButton text="Back" android.systemIcon="ic_menu_back" on:tap={goBack} /> -->
+        <!-- <navigationButton text="Back" android.systemIcon="ic_menu_back" on:tap={goBack} /> -->
     <stackLayout>
         {#each ($switches).sort((a, b) => a.switchNum - b.switchNum) as customSwitch (customSwitch.switchNum)}
             <!-- <CustomToggle 
@@ -84,11 +87,6 @@
 </page>
 
 <style>
-    button.arm-btn {
-        /* background: linear-gradient(90deg, #D7EBEB, #F4AFE9, #9D7EF3); */
-        background-color: #31AF9C;
-        color: black;
-    }
     button.btn-1 {
         /* background: linear-gradient(90deg, #F0EAFC, #61CEF2, #F538B9); */
         /* background-color: #DB9B06; */

@@ -2,7 +2,8 @@
     import { Application } from "@nativescript/core";
     import { switches, peripheralUUID, bluetooth, startVoltageNotifications } from "../models/states.svelte.js";
     import StatusPage from "./StatusPage.svelte";
-    import { navigate } from "@nativescript-community/svelte-native";
+    // import { navigate } from "@nativescript-community/svelte-native";
+    import { navigate, goBack } from "@nativescript-community/svelte-native";
     import { get } from "svelte/store"
 
     async function requestAndroidPermissions() {
@@ -213,7 +214,9 @@
 </script>
 
 <page>
-    <actionBar title="Bluetooth Scanner" />
+    <actionBar title="Bluetooth Scanner">
+        <navigationButton text="Back" android.systemIcon="ic_menu_back" on:tap={goBack} />
+    </actionBar>
     <scrollView>
         <stackLayout class="p-20" backgroundColor="#000" >
             <button text="Start Scan" on:tap={toggleScan} class="btn -primary" height="60" width="100%"/>
