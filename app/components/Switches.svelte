@@ -8,7 +8,7 @@
     
 
 
-    let isArmed = false;
+    let isArmed = true;
     // 1. Initialize Bluetooth
 
     // Assuming you have the connected peripheral UUID available globally or via props
@@ -76,24 +76,6 @@
                 <StatusMessage statusChar={String.fromCharCode(customSwitch.state)} />
             </stackLayout>
         {/each}
-        <button class="arm-btn" text={isArmed ? "Disarm" : "Arm"} on:tap={() => {
-            if (isArmed) {
-                isArmed = false;
-                return;
-            }
-            prompt({
-                title: "Confirm Arming",
-                message: "Enter the phrase \"Bagel123\" to arm the BAGEL",
-                inputType: "text",
-                okButtonText: "Arm",
-                cancelButtonText: "Cancel",
-                cancelable: true
-            }).then((result) => {
-                if (result.result && result.text == "Bagel123") {
-                    isArmed = true;
-                }
-            });
-        }} />
             <stackLayout orientation="horizontal" width="100%">
             <label>Battery Voltage: {Math.round($batteryVoltageState / 255 * 6.6 * 100) / 100}V</label>
             </stackLayout>
