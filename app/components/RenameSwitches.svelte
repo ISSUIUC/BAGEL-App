@@ -4,11 +4,14 @@
     import { StackLayout } from '@nativescript/core';
     import { localStore } from '~/models/localStore';
     import { get } from 'svelte/store';
+    import { goBack } from '@nativescript-community/svelte-native';
     // import {textField} from "svelte-native";
 </script>
 
 <page>
-<actionBar title={`Update ${$deviceName} Labels`} />
+<actionBar title={`Update ${$deviceName} Labels`} >
+    <navigationButton text="Back" android.systemIcon="ic_menu_back" on:tap={goBack} />
+</actionBar>
 <stackLayout class="outer">
     {#each switchLabels as switchLabel, i}
         <stackLayout orientation="horizontal" class={`switch switch-${i}`}>
@@ -23,7 +26,6 @@
     .outer {
         display: flex;
         align-content: center;
-        width: fit-content;
     }
 
     .switch-0 {
@@ -49,7 +51,6 @@
     .switch {
         /* background-color: red; */
         margin-left: 25px;
-        width: fit-content;
         border-radius: 10%;
         padding-left: 25px;
         margin-top: 15px;
