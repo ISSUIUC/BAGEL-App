@@ -1,6 +1,6 @@
 <script>
     import localStorage from '@nativescript-use/nativescript-localstorage';
-    import {switchLabels} from "~/models/states.svelte";
+    import {switchLabels, deviceName} from "~/models/states.svelte";
     import { StackLayout } from '@nativescript/core';
     import { localStore } from '~/models/localStore';
     import { get } from 'svelte/store';
@@ -8,7 +8,7 @@
 </script>
 
 <page>
-<actionBar title="Update Switch Labels" />
+<actionBar title={`Update ${$deviceName} Labels`} />
 <stackLayout class="outer">
     {#each switchLabels as switchLabel, i}
         <stackLayout orientation="horizontal" class={`switch switch-${i}`}>
