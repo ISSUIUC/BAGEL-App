@@ -1,8 +1,10 @@
 <script>
-    import { bluetooth, peripheralUUID, switches, batteryVoltageState } from "../models/states.svelte.js";
+    import { bluetooth, peripheralUUID, switches, batteryVoltageState, disconnect, deviceName } from "../models/states.svelte.js";
     import StatusMessage from "./StatusMessage.svelte";
     // import { navigate } from "svelte-native";
-    import { goBack } from "@nativescript-community/svelte-native";
+    import { goBack, navigate } from "@nativescript-community/svelte-native";
+    import { get } from 'svelte/store';
+    import BluetoothPage from "./BluetoothPage.svelte";
 
     // import { prompt } from '@nativescript/core/ui/dialogs';
 
@@ -57,30 +59,51 @@
             alert("Action failed: Device unreachable.");
         }
     }
+    async function disconnectStuff() {
+        console.log("disconnecting");
+        console.log($peripheralUUID);
+        await get(bluetooth).disconnect({ UUID: $peripheralUUID }).then(() => {
+            $peripheralUUID = false;
+            console.log("disconnected");
+        });
+    }
+    function goToBluetooth() {
+        navigate({
+            page: BluetoothPage,
+            // Optional: Transition animations
+            transition: {
+                name: "slide",
+                duration: 200,
+                curve: "easeIn"
+            }
+        });
+    }
 </script>
 
 <page>
-    <actionBar title="Switches">
+    <actionBar title={`${get(deviceName)} Switches`}>
             <!-- <navigationButton text="Back" android.systemIcon="ic_menu_back" on:tap={goBack} /> -->
         <!-- <navigationButton text="Back" android.systemIcon="ic_menu_back" on:tap={goBack} /> -->
+        <navigationButton text="Back" android.systemIcon="ic_menu_back" on:tap={goBack} />
+    </actionBar>
     <stackLayout>
         {#each ($switches).sort((a, b) => a.switchNum - b.switchNum) as customSwitch (customSwitch.switchNum)}
-            <!-- <CustomToggle 
-                switchModel={customSwitch}
-                on:toggle={() => handleToggle(customSwitch)}
-            /> -->
             <stackLayout orientation="horizontal" width="100%">
-                <button class="btn-1" isEnabled={isArmed} text={`${customSwitch.label} On`} width="30%" on:tap={async () => {
+                <button class="btn-1" isEnabled={$peripheralUUID != false} text={`${customSwitch.label} On`} width="20%" on:tap={async () => {
                     await customSwitch.bleSendVal(1);
                 }} />
-                <button class="btn-2" isEnabled={isArmed} text={`${customSwitch.label} Off`} width="30%" on:tap={async () => {
+                <button class="btn-2" isEnabled={$peripheralUUID != false} text={`${customSwitch.label} Off`} width="20%" on:tap={async () => {
                     await customSwitch.bleSendVal(0);
                 }} />
-                <StatusMessage statusChar={String.fromCharCode(customSwitch.state)} />
+                <StatusMessage statusChar={String.fromCharCode(customSwitch.state)} shouldBe={customSwitch.shouldBe} />
             </stackLayout>
         {/each}
-            <stackLayout orientation="horizontal" width="100%">
-            <label>Battery Voltage: {Math.round($batteryVoltageState / 255 * 6.6 * 100) / 100}V</label>
+            <stackLayout orientation="vertical" width="100%">
+                <label>Battery Voltage: {Math.round($batteryVoltageState / 255 * 6.6 * 100) / 100}V</label>
+                <label class={($peripheralUUID == false) ? "disconnected" : "connected"}>{($peripheralUUID == false) ? "Disconnected" : "Connected"}</label>
+                <button class="disconnect btn-1" isEnabled={$peripheralUUID != false} text="Disconnect" on:tap={disconnectStuff}/>
+                <button class="disconnect btn-1" text="Go to Bluetooth Connect Page" on:tap={goToBluetooth}/>
+
             </stackLayout>
 
     </stackLayout>
@@ -98,6 +121,30 @@
         /* background-color: #DB9B06; */
         background-color: #A6D9F7;
         color: black;
+    }
+    label.connected {
+        color: white;
+        background-color: green;
+    }
+    label.disconnected {
+        color: white;
+        background-color: red;
+    }
+    label {
+        width: 50%;
+        text-align: center;
+        padding-top: 10em;
+        padding-bottom: 10em;
+        font-size: large;
+        font-weight: bold;
+    }
+    button.disconnect {
+        width: 50%;
+        text-align: center;
+        padding-top: 10em;
+        padding-bottom: 10em;
+        font-size: large;
+        font-weight: bold;
     }
 
     

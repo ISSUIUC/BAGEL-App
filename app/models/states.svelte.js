@@ -14,9 +14,17 @@ export const bluetooth = writable(new Bluetooth());
 // export const switch5Label = localStore("switch5", "Switch 5");
 // export const switch6Label = localStore("switch6", "Switch 6");
 
+
 export const switchLabels = [];
 for (let i=1; i<7; i++) {
     switchLabels.push(localStore(`switch${i}`, `Switch ${i}`))
+}
+
+export function reinitSwitchLabels(bluetoothName) {
+    switchLabels.length = 0;
+    for (let i=1; i<7; i++) {
+        switchLabels.push(localStore(`${bluetoothName}-switch${i}`, `Switch ${i}`));
+    }
 }
 export const switchInitData = [
     {
@@ -70,6 +78,8 @@ export const batteryVoltageCharacteristic = {
 
 export const batteryVoltageState = writable(0);
 
+export const deviceName = writable("BAGEL");
+
 
 export async function startVoltageNotifications() {
     // try {
@@ -79,7 +89,7 @@ export async function startVoltageNotifications() {
             characteristicUUID: batteryVoltageCharacteristic.charUuid,
             onNotify: (result) => {
                 let actualState = new Uint8Array(result.value)[0];
-                console.log("Notified: ", actualState);
+                // console.log("Notified: ", actualState);
                 // this.state = uint8View[0];
 
                 // console.log(JSON.stringify(actualSwitch))
@@ -102,5 +112,10 @@ let switchesData = switchInitData.map(data => {
 
 
 export const switches = writable([...switchesData]);
+// export const bluetoothConnected = writable(false);
 
 export const peripheralUUID = writable(false);
+
+export function disconnect() {
+    get(bluetooth).disconnect();
+}

@@ -1,4 +1,4 @@
-import { peripheralUUID, bluetooth, switches, switchLabels } from "./states.svelte";
+import { peripheralUUID, bluetooth, switches, switchLabels, disconnect } from "./states.svelte";
 import { get } from "svelte/store";
 
 async function writeByteToCharacteristic(peripheralUUID, serviceUUID, characteristicUUID, byteValue) {
@@ -33,6 +33,7 @@ export default class Switch {
         this.serviceUUID = serviceUUID;
         this.charUUID = charUUID;
         this.id = Math.random();
+        this.shouldBe = undefined;
     }
 
     get label() {
@@ -62,8 +63,8 @@ export default class Switch {
     }
 
     async bleSendVal(val) {
+        this.shouldBe = (val != 0)
         await writeByteToCharacteristic(get(peripheralUUID), this.serviceUUID, this.charUUID, val);
-
     }
 
     disable() {
@@ -82,6 +83,10 @@ export default class Switch {
             characteristicUUID: this.charUUID,
             onNotify: (result) => {
                 let actualState = new Uint8Array(result.value)[0];
+                if (this.shouldBe == undefined) {
+                    this.shouldBe = (actualState == 'N'.charCodeAt(0));
+                }
+                // console.log(actualState);
                 // this.state = uint8View[0];
                 let this_id = this.id;
                 const actualSwitch = get(switches).filter(obj => obj.id == this_id)[0];

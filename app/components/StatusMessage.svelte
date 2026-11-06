@@ -1,5 +1,6 @@
 <script>    
     export let statusChar;
+    export let shouldBe;
 </script>
 
 <stackLayout orientation="horizontal" width="100%" class="status-indicator">
@@ -12,13 +13,18 @@
     {:else}
     <label class="status impossible">Impossible</label>
     {/if}
+    {#if shouldBe}
+    <label class="status nominal">On</label>
+    {:else}
+    <label class="status off">Off</label>
+    {/if}
 </stackLayout>
 
 <style>
     .status-indicator {
         /* background-color: lightgrey; */
         width: 100%;
-        margin: auto;
+        margin: 0;
         padding: auto;
         text-align: center;
         display: flex;
@@ -32,7 +38,7 @@
     .status {
         text-align: center;
         /* padding: 30px; */
-        width: 100%;
+        width: 40%;
         border: 1px solid black;
         border-radius: 10%;
         height: auto;
@@ -41,6 +47,7 @@
     label {
         /* font-size: 500px; */
         color: white;
+        margin: 20px;
     }
 
     .disconnected {

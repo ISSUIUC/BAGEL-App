@@ -47,9 +47,8 @@
     async function disconnectStuff() {
         console.log(get(peripheralUUID));
         await get(bluetooth).disconnect({ UUID: get(peripheralUUID) }).then(() => {
-            console.log("howdy doody");
+            $peripheralUUID = false;
         });
-        console.warn("howdy");
     }
 
 </script>

@@ -1,6 +1,6 @@
 <script>
     import { Application } from "@nativescript/core";
-    import { switches, peripheralUUID, bluetooth, startVoltageNotifications } from "../models/states.svelte.js";
+    import { switches, peripheralUUID, bluetooth, startVoltageNotifications, reinitSwitchLabels, deviceName } from "../models/states.svelte.js";
     import StatusPage from "./StatusPage.svelte";
     // import { navigate } from "@nativescript-community/svelte-native";
     import { navigate, goBack } from "@nativescript-community/svelte-native";
@@ -130,12 +130,14 @@
                         device.connected = true;
                         devices = [...devices];
                         peripheralUUID.set(peripheral.UUID);
+                        deviceName.set(peripheral.advertismentData.localName);
                         await startVoltageNotifications().then(() => {
                             console.log("Voltage notifications set up.")
                         })
                         await setupNotifications().then(() => {
                             console.log("things")
                         });
+                        reinitSwitchLabels(peripheral.advertismentData.localName);
 
                         // navigate({
                         //     page: StatusPage,
